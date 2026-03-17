@@ -2091,7 +2091,7 @@ function signalMeta(type, value, desc) {
 }
 
 function analyzeAll(klines) {
-  if (!klines || klines.length < 50) throw new Error('K线数据不足，该币种可能是新币或交易量过低');
+  if (!klines || klines.length < 20) throw new Error('K线数据不足，该币种可能是新币或交易量过低');
   const opens   = klines.map(k => parseFloat(k[1]));
   const highs   = klines.map(k => parseFloat(k[2]));
   const lows    = klines.map(k => parseFloat(k[3]));
@@ -2117,7 +2117,7 @@ function analyzeAll(klines) {
   // ─ EMA Cross ─
   const ema20 = calcEMA(closes, 20);
   const ema50 = calcEMA(closes, 50);
-  const ema200 = calcEMA(closes, 200);
+  const ema200 = calcEMA(closes, Math.min(200, closes.length));
   const e20 = ema20[last], e50 = ema50[last], e200 = ema200[last];
   let emaType = 'neutral', emaBar = 50;
   let emaDesc = `EMA20:${fmtPrice(e20)} / EMA50:${fmtPrice(e50)}`;
@@ -2135,7 +2135,7 @@ function analyzeAll(klines) {
   indicators.ema200 = { ...signalMeta(crossType, fmtPrice(e200), crossDesc), bar: crossBar, group:'trend' };
 
   // ─ Bollinger Bands ─
-  const boll = calcBollinger(closes);
+  const boll = calcBollinger(closes, Math.min(20, closes.length));
   const bollLast = boll[last];
   let bollType = 'neutral', bollBar = 50, bollDesc = '数据不足';
   let bw = 0;
