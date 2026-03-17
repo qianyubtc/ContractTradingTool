@@ -1464,6 +1464,97 @@ function showError(msg) {
 // ─── API 路由 ─────────────────────────────────────────────────────────────────
 // 所有请求通过 Worker 代理，解决国内访问问题
 const API = 'https://api1.qianyubtc.com';
+
+// ── 币种搜索模块 ─────────────────────────────────────────────────────────────
+window.window._allSymbols = [];
+window.window._symbolDropdownOpen = false;
+
+async function loadSymbolList() {
+  try {
+    const r = await fetch(`${API}/api/proxy?u=${encodeURIComponent('https://fapi.binance.com/fapi/v1/exchangeInfo')}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    window._allSymbols = (d.symbols || [])
+      .filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT')
+      .map(s => ({ symbol: s.symbol, base: s.baseAsset }))
+      .sort((a, b) => a.base.localeCompare(b.base));
+    // 인기 종목 앞으로
+    const popular = ['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT','LTC','MATIC','NEAR','ARB','OP'];
+    window._allSymbols.sort((a, b) => {
+      const ai = popular.indexOf(a.base), bi = popular.indexOf(b.base);
+      if (ai >= 0 && bi >= 0) return ai - bi;
+      if (ai >= 0) return -1;
+      if (bi >= 0) return 1;
+      return 0;
+    });
+  } catch {}
+}
+
+function renderSymbolDropdown(items) {
+  const dd = document.getElementById('symbolDropdown');
+  if (!items.length) {
+    dd.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:var(--text-muted);">无匹配结果</div>';
+    return;
+  }
+  const current = document.getElementById('symbolSelect').value;
+  dd.innerHTML = items.slice(0, 50).map(s => `
+    <div class="symbol-dropdown-item ${s.symbol === current ? 'active' : ''}"
+         onclick="selectSymbol('${s.symbol}','${s.base}')">
+      <span class="sym-name">${s.base}</span>
+      <span style="color:var(--text-muted);font-size:11px;">/USDT</span>
+    </div>
+  `).join('');
+}
+
+function toggleSymbolDropdown() {
+  const dd = document.getElementById('symbolDropdown');
+  const inp = document.getElementById('symbolInput');
+  window._symbolDropdownOpen = !window._symbolDropdownOpen;
+  if (window._symbolDropdownOpen) {
+    inp.removeAttribute('readonly');
+    inp.value = '';
+    dd.style.display = 'block';
+    renderSymbolDropdown(window._allSymbols);
+  } else {
+    closeSymbolDropdown();
+  }
+}
+
+function filterSymbols(val) {
+  const dd = document.getElementById('symbolDropdown');
+  dd.style.display = 'block';
+  window._symbolDropdownOpen = true;
+  const q = val.toUpperCase().replace('/','').replace('-','');
+  const filtered = !q ? window._allSymbols : window._allSymbols.filter(s =>
+    s.base.includes(q) || s.symbol.includes(q)
+  );
+  renderSymbolDropdown(filtered);
+}
+
+function selectSymbol(symbol, base) {
+  document.getElementById('symbolSelect').value = symbol;
+  document.getElementById('symbolInput').value = base + '/USDT';
+  document.getElementById('symbolInput').setAttribute('readonly', '');
+  closeSymbolDropdown();
+  loadAll();
+}
+
+function closeSymbolDropdown() {
+  window._symbolDropdownOpen = false;
+  document.getElementById('symbolDropdown').style.display = 'none';
+  // 현재 선택된 값으로 input 복원
+  const sym = document.getElementById('symbolSelect').value;
+  const base = sym.replace('USDT','');
+  document.getElementById('symbolInput').value = base + '/USDT';
+  document.getElementById('symbolInput').setAttribute('readonly', '');
+}
+
+// 외부 클릭 시 드롭다운 닫기
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('symbolSearchWrap');
+  if (wrap && !wrap.contains(e.target)) closeSymbolDropdown();
+});
+
 // 以下仅用于 URL 路径识别，实际请求走 API 服务器
 const BINANCE   = 'https://api.binance.com';
 const BINANCE_F = 'https://fapi.binance.com';
@@ -3459,7 +3550,7 @@ async function loadAll(silent=false) {
   // input 표시 동기화
   const _base = symbol.replace('USDT','');
   const _inp = document.getElementById('symbolInput');
-  if (_inp && !_symbolDropdownOpen) _inp.value = _base + '/USDT';
+  if (_inp && !window._symbolDropdownOpen) _inp.value = _base + '/USDT';
   const interval = document.getElementById('intervalSelect').value;
   const btn = document.getElementById('refreshBtn');
 
@@ -5299,7 +5390,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // switchPage가 로드된 후 실행
   window.addEventListener('DOMContentLoaded', function() {
-    loadSymbolList();
+    setTimeout(loadSymbolList, 100);
     init();
     // updateMobileBar已通过window.updateMobileBar暴露，switchPage内直接调用
   });
@@ -5316,96 +5407,6 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 })();
 </script>
-
-// ── 币种搜索模块 ─────────────────────────────────────────────────────────────
-let _allSymbols = [];
-let _symbolDropdownOpen = false;
-
-async function loadSymbolList() {
-  try {
-    const r = await fetch(`${API}/api/proxy?u=${encodeURIComponent('https://fapi.binance.com/fapi/v1/exchangeInfo')}`);
-    if (!r.ok) return;
-    const d = await r.json();
-    _allSymbols = (d.symbols || [])
-      .filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT')
-      .map(s => ({ symbol: s.symbol, base: s.baseAsset }))
-      .sort((a, b) => a.base.localeCompare(b.base));
-    // 인기 종목 앞으로
-    const popular = ['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT','LTC','MATIC','NEAR','ARB','OP'];
-    _allSymbols.sort((a, b) => {
-      const ai = popular.indexOf(a.base), bi = popular.indexOf(b.base);
-      if (ai >= 0 && bi >= 0) return ai - bi;
-      if (ai >= 0) return -1;
-      if (bi >= 0) return 1;
-      return 0;
-    });
-  } catch {}
-}
-
-function renderSymbolDropdown(items) {
-  const dd = document.getElementById('symbolDropdown');
-  if (!items.length) {
-    dd.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:var(--text-muted);">无匹配结果</div>';
-    return;
-  }
-  const current = document.getElementById('symbolSelect').value;
-  dd.innerHTML = items.slice(0, 50).map(s => `
-    <div class="symbol-dropdown-item ${s.symbol === current ? 'active' : ''}"
-         onclick="selectSymbol('${s.symbol}','${s.base}')">
-      <span class="sym-name">${s.base}</span>
-      <span style="color:var(--text-muted);font-size:11px;">/USDT</span>
-    </div>
-  `).join('');
-}
-
-function toggleSymbolDropdown() {
-  const dd = document.getElementById('symbolDropdown');
-  const inp = document.getElementById('symbolInput');
-  _symbolDropdownOpen = !_symbolDropdownOpen;
-  if (_symbolDropdownOpen) {
-    inp.removeAttribute('readonly');
-    inp.value = '';
-    dd.style.display = 'block';
-    renderSymbolDropdown(_allSymbols);
-  } else {
-    closeSymbolDropdown();
-  }
-}
-
-function filterSymbols(val) {
-  const dd = document.getElementById('symbolDropdown');
-  dd.style.display = 'block';
-  _symbolDropdownOpen = true;
-  const q = val.toUpperCase().replace('/','').replace('-','');
-  const filtered = !q ? _allSymbols : _allSymbols.filter(s =>
-    s.base.includes(q) || s.symbol.includes(q)
-  );
-  renderSymbolDropdown(filtered);
-}
-
-function selectSymbol(symbol, base) {
-  document.getElementById('symbolSelect').value = symbol;
-  document.getElementById('symbolInput').value = base + '/USDT';
-  document.getElementById('symbolInput').setAttribute('readonly', '');
-  closeSymbolDropdown();
-  loadAll();
-}
-
-function closeSymbolDropdown() {
-  _symbolDropdownOpen = false;
-  document.getElementById('symbolDropdown').style.display = 'none';
-  // 현재 선택된 값으로 input 복원
-  const sym = document.getElementById('symbolSelect').value;
-  const base = sym.replace('USDT','');
-  document.getElementById('symbolInput').value = base + '/USDT';
-  document.getElementById('symbolInput').setAttribute('readonly', '');
-}
-
-// 외부 클릭 시 드롭다운 닫기
-document.addEventListener('click', (e) => {
-  const wrap = document.getElementById('symbolSearchWrap');
-  if (wrap && !wrap.contains(e.target)) closeSymbolDropdown();
-});
 
 </body>
 </html>
