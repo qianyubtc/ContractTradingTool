@@ -69,7 +69,7 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg0);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;overflow-x:hidden;line-height:1.5;transition:background 0.25s,color 0.25s;}
+body{background:var(--bg0);color:var(--text);font-family:var(--sans);font-size:15px;min-height:100vh;overflow-x:hidden;line-height:1.5;transition:background 0.25s,color 0.25s;}
 [data-theme='dark'] body::before,[data-theme='dark']::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(24,144,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(24,144,255,0.02) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
 body::after{content:'';position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),var(--blue),var(--purple));z-index:9999;pointer-events:none;}
 ::-webkit-scrollbar{width:4px;height:4px;}
@@ -107,7 +107,7 @@ select:focus{border-color:var(--blue);}
 
 .main{padding:16px 20px 40px;max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:12px;position:relative;z-index:1;}
 
-.section-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;padding:6px 0 2px;display:flex;align-items:center;gap:10px;margin-top:4px;}
+.section-label{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;padding:6px 0 2px;display:flex;align-items:center;gap:10px;margin-top:4px;}
 .section-label::before{content:'▸';color:var(--blue);font-size:10px;}
 .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
@@ -115,14 +115,14 @@ select:focus{border-color:var(--blue);}
 .price-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 0% 50%,rgba(0,217,126,0.04) 0%,transparent 60%);pointer-events:none;}
 .price-main{display:flex;flex-direction:column;gap:5px;}
 .price-symbol{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text);letter-spacing:2px;background:var(--bg3);border:1px solid var(--border2);padding:3px 10px;border-radius:4px;display:inline-block;width:fit-content;}
-.price-value{font-family:var(--mono);font-size:32px;font-weight:700;letter-spacing:-1px;transition:color 0.3s;line-height:1.1;}
-.price-change{font-family:var(--mono);font-size:13px;font-weight:700;}
+.price-value{font-family:var(--mono);font-size:36px;font-weight:700;letter-spacing:-1px;transition:color 0.3s;line-height:1.1;}
+.price-change{font-family:var(--mono);font-size:15px;font-weight:700;}
 .price-change.up{color:var(--green);}
 .price-change.down{color:var(--red);}
 .price-stats{display:flex;gap:24px;flex-wrap:wrap;}
 .stat-item{display:flex;flex-direction:column;gap:3px;}
-.stat-label{font-size:9px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;}
-.stat-value{font-family:var(--mono);font-size:12px;color:var(--text-dim);}
+.stat-label{font-size:11px;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;}
+.stat-value{font-family:var(--mono);font-size:14px;color:var(--text-dim);}
 .mini-chart{width:180px;height:52px;flex-shrink:0;}
 
 .score-section{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
@@ -133,12 +133,12 @@ select:focus{border-color:var(--blue);}
 .score-bar-short{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--red),rgba(240,56,74,0.4));transition:width 1s cubic-bezier(0.4,0,0.2,1);}
 .score-center{display:flex;flex-direction:column;align-items:center;gap:2px;}
 .score-label-main{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:1px;}
-.score-verdict{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:1px;}
-.score-num-long{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--green);}
-.score-num-short{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--red);}
+.score-verdict{font-family:var(--mono);font-size:15px;font-weight:700;letter-spacing:1px;}
+.score-num-long{font-family:var(--mono);font-size:32px;font-weight:700;color:var(--green);}
+.score-num-short{font-family:var(--mono);font-size:32px;font-weight:700;color:var(--red);}
 .score-slash{font-family:var(--mono);font-size:20px;color:var(--text-muted);padding:0 6px;align-self:center;}
 .signal-counts{display:flex;gap:16px;margin-top:12px;justify-content:center;}
-.signal-count-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);}
+.signal-count-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-dim);}
 .signal-count-item strong{color:var(--text);font-family:var(--mono);}
 
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -151,7 +151,7 @@ select:focus{border-color:var(--blue);}
 .panel-header.collapsible{cursor:pointer;}
 .panel-header.collapsible:hover{background:rgba(255,255,255,0.02);}
 .panel-header.collapsible:active{background:rgba(255,255,255,0.04);}
-.panel-title{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.panel-title{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
 .panel-collapse-arrow{color:var(--text-muted);font-size:10px;transition:transform 0.25s;flex-shrink:0;display:none;}
 .panel-header.collapsible .panel-collapse-arrow{display:block;}
 .panel-header.collapsed .panel-collapse-arrow{transform:rotate(-90deg);}
@@ -185,7 +185,7 @@ select:focus{border-color:var(--blue);}
 .ind-bar.green{background:var(--green);}
 .ind-bar.red{background:var(--red);}
 .ind-bar.amber{background:var(--amber);}
-.ind-value{font-family:var(--mono);font-size:11px;color:var(--text-dim);text-align:right;}
+.ind-value{font-family:var(--mono);font-size:12px;color:var(--text-dim);text-align:right;}
 
 .signal-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:3px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:0.5px;white-space:nowrap;}
 .signal-bull{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,217,126,0.2);}
@@ -198,7 +198,7 @@ select:focus{border-color:var(--blue);}
 
 .futures-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
 .futures-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:5px;}
-.futures-card-label{font-size:9px;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;}
+.futures-card-label{font-size:11px;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;}
 .futures-card-value{font-family:var(--mono);font-size:16px;font-weight:700;}
 .futures-card-sub{font-size:10px;color:var(--text-muted);}
 
@@ -290,6 +290,15 @@ select:focus{border-color:var(--blue);}
 }
 .event-coin-btn:hover { border-color: var(--amber); color: var(--amber); }
 .event-coin-btn.active { background: rgba(245,166,35,0.12); color: var(--amber); border-color: rgba(245,166,35,0.4); }
+
+
+/* Symbol Search */
+.symbol-search-wrap{position:relative;display:flex;align-items:center;}
+.symbol-dropdown-item{padding:8px 14px;font-family:var(--mono);font-size:12px;
+  color:var(--text-dim);cursor:pointer;white-space:nowrap;border-bottom:1px solid var(--border);}
+.symbol-dropdown-item:hover,.symbol-dropdown-item.active{background:var(--bg2);color:var(--text);}
+.symbol-dropdown-item .sym-name{font-weight:700;color:var(--text);}
+.symbol-dropdown-item .sym-vol{font-size:10px;color:var(--text-muted);margin-left:8px;}
 
 /* ─── PAGE TABS ─── */
 .page-tabs {
@@ -564,7 +573,7 @@ select:focus{border-color:var(--blue);}
 }
 @media(max-width:768px){
   /* base */
-  body{font-size:13px;}
+  body{font-size:14px;}
   /* fear greed row: 小屏垂直堆叠 */
   .fg-row { flex-direction: column; align-items: flex-start; gap: 10px; }
   .fg-arc-wrap { width: 100% !important; display: flex; justify-content: center; }
@@ -573,7 +582,7 @@ select:focus{border-color:var(--blue);}
   *{-webkit-text-size-adjust:100%;}
 
   /* header: 移动端只显示logo+controls，tab在底部 */
-  .header{height:48px;padding:0 10px;gap:6px;}
+  .header{height:52px;padding:0 10px;gap:6px;}
   .header .page-tabs{display:none !important;}  /* 隐藏header内的tab */
   #analysisControls{
     flex:1;display:flex;align-items:center;
@@ -636,7 +645,7 @@ select:focus{border-color:var(--blue);}
   .panel-collapse-arrow{display:block!important;}
   .panel-title{font-size:10px;}
   .panel-body{padding:9px 11px;}
-  .panel-badge{font-size:9px;}
+  .panel-badge{font-size:11px;}
 
   /* indicators */
   .indicator-row{
@@ -718,24 +727,23 @@ select:focus{border-color:var(--blue);}
     </button>
   </nav>
   <div class="header-controls" id="analysisControls">
-    <select id="symbolSelect">
-      <option value="BTCUSDT">BTC/USDT</option>
-      <option value="ETHUSDT">ETH/USDT</option>
-      <option value="BNBUSDT">BNB/USDT</option>
-      <option value="SOLUSDT">SOL/USDT</option>
-      <option value="XRPUSDT">XRP/USDT</option>
-      <option value="DOGEUSDT">DOGE/USDT</option>
-      <option value="ADAUSDT">ADA/USDT</option>
-      <option value="AVAXUSDT">AVAX/USDT</option>
-      <option value="LINKUSDT">LINK/USDT</option>
-      <option value="DOTUSDT">DOT/USDT</option>
-      <option value="LTCUSDT">LTC/USDT</option>
-      <option value="MATICUSDT">MATIC/USDT</option>
-      <option value="NEARUSDT">NEAR/USDT</option>
-      <option value="ARBUSDT">ARB/USDT</option>
-      <option value="OPUSDT">OP/USDT</option>
-      <option value="龙虾USDT">龙虾/USDT</option>
-    </select>
+    <div class="symbol-search-wrap" id="symbolSearchWrap">
+      <input type="text" id="symbolInput" placeholder="BTC/USDT" autocomplete="off"
+        style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);
+               font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:var(--r);
+               outline:none;width:110px;cursor:pointer;"
+        readonly
+        onclick="toggleSymbolDropdown()"
+        onfocus="this.removeAttribute('readonly');this.select();"
+        oninput="filterSymbols(this.value)"
+      />
+      <div id="symbolDropdown" style="display:none;position:absolute;top:100%;left:0;
+           background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r);
+           z-index:9999;max-height:280px;overflow-y:auto;min-width:160px;
+           box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+      </div>
+    </div>
+    <input type="hidden" id="symbolSelect" value="BTCUSDT">
     <select id="intervalSelect">
       <option value="15m">15分钟</option>
       <option value="1h" selected>1小时</option>
@@ -906,39 +914,7 @@ select:focus{border-color:var(--blue);}
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════ -->
-  <!-- NEWS & BINANCE SQUARE                      -->
-  <!-- ══════════════════════════════════════════ -->
-  <div class="section-label">消息面分析</div>
 
-  <!-- News Summary Row -->
-  <div class="panel" style="margin-bottom:0">
-    <div class="panel-header" style="flex-wrap:wrap;gap:8px;">
-      <div class="panel-title">消息面总览</div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <span class="tf-pill active" id="newsTfLabel">--</span>
-        <span id="newsTimeWindow" style="font-size:11px;color:var(--text-muted);">--</span>
-      </div>
-      <span class="panel-badge badge-blue" id="newsSummaryBadge" style="margin-left:auto">加载中...</span>
-    </div>
-    <div class="panel-body" style="padding-bottom:10px;">
-      <!-- Sentiment bar -->
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px;font-family:var(--mono);">
-        <span>利多 <strong id="newsBullCount" style="color:var(--green)">0</strong></span>
-        <span>中性 <strong id="newsNeutralCount" style="color:var(--text-muted)">0</strong></span>
-        <span>利空 <strong id="newsBearCount" style="color:var(--red)">0</strong></span>
-      </div>
-      <div class="news-summary-bar" id="newsSummaryBar">
-        <div class="bull-seg"    id="newsBullBar"    style="width:33%"></div>
-        <div class="neutral-seg" id="newsNeutralBar" style="width:34%"></div>
-        <div class="bear-seg"    id="newsBearBar"    style="width:33%"></div>
-      </div>
-      <!-- AI-style conclusion driven by data -->
-      <div id="newsConclusion" style="margin-top:8px;font-size:13px;color:var(--text-dim);line-height:1.7;padding:10px 14px;background:var(--bg2);border-radius:var(--radius);">
-        正在获取消息数据...
-      </div>
-    </div>
-  </div>
 
 
 
@@ -3480,6 +3456,10 @@ function generateSyntheticNews(coin, interval, indicators) {
 // Binance Square simulation — driven by real market data
 async function loadAll(silent=false) {
   const symbol = document.getElementById('symbolSelect').value;
+  // input 표시 동기화
+  const _base = symbol.replace('USDT','');
+  const _inp = document.getElementById('symbolInput');
+  if (_inp && !_symbolDropdownOpen) _inp.value = _base + '/USDT';
   const interval = document.getElementById('intervalSelect').value;
   const btn = document.getElementById('refreshBtn');
 
@@ -3667,7 +3647,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }, 60000);
 });
 
-document.getElementById('symbolSelect').addEventListener('change', loadAll);
+// symbolSelect is now a hidden input, change triggered programmatically
 document.getElementById('intervalSelect').addEventListener('change', loadAll);
 
 // ═══════════════════════════════════════════════
@@ -5319,6 +5299,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // switchPage가 로드된 후 실행
   window.addEventListener('DOMContentLoaded', function() {
+    loadSymbolList();
     init();
     // updateMobileBar已通过window.updateMobileBar暴露，switchPage内直接调用
   });
@@ -5335,5 +5316,96 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 })();
 </script>
+
+// ── 币种搜索模块 ─────────────────────────────────────────────────────────────
+let _allSymbols = [];
+let _symbolDropdownOpen = false;
+
+async function loadSymbolList() {
+  try {
+    const r = await fetch(`${API}/api/proxy?u=${encodeURIComponent('https://fapi.binance.com/fapi/v1/exchangeInfo')}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    _allSymbols = (d.symbols || [])
+      .filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT')
+      .map(s => ({ symbol: s.symbol, base: s.baseAsset }))
+      .sort((a, b) => a.base.localeCompare(b.base));
+    // 인기 종목 앞으로
+    const popular = ['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT','LTC','MATIC','NEAR','ARB','OP'];
+    _allSymbols.sort((a, b) => {
+      const ai = popular.indexOf(a.base), bi = popular.indexOf(b.base);
+      if (ai >= 0 && bi >= 0) return ai - bi;
+      if (ai >= 0) return -1;
+      if (bi >= 0) return 1;
+      return 0;
+    });
+  } catch {}
+}
+
+function renderSymbolDropdown(items) {
+  const dd = document.getElementById('symbolDropdown');
+  if (!items.length) {
+    dd.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:var(--text-muted);">无匹配结果</div>';
+    return;
+  }
+  const current = document.getElementById('symbolSelect').value;
+  dd.innerHTML = items.slice(0, 50).map(s => `
+    <div class="symbol-dropdown-item ${s.symbol === current ? 'active' : ''}"
+         onclick="selectSymbol('${s.symbol}','${s.base}')">
+      <span class="sym-name">${s.base}</span>
+      <span style="color:var(--text-muted);font-size:11px;">/USDT</span>
+    </div>
+  `).join('');
+}
+
+function toggleSymbolDropdown() {
+  const dd = document.getElementById('symbolDropdown');
+  const inp = document.getElementById('symbolInput');
+  _symbolDropdownOpen = !_symbolDropdownOpen;
+  if (_symbolDropdownOpen) {
+    inp.removeAttribute('readonly');
+    inp.value = '';
+    dd.style.display = 'block';
+    renderSymbolDropdown(_allSymbols);
+  } else {
+    closeSymbolDropdown();
+  }
+}
+
+function filterSymbols(val) {
+  const dd = document.getElementById('symbolDropdown');
+  dd.style.display = 'block';
+  _symbolDropdownOpen = true;
+  const q = val.toUpperCase().replace('/','').replace('-','');
+  const filtered = !q ? _allSymbols : _allSymbols.filter(s =>
+    s.base.includes(q) || s.symbol.includes(q)
+  );
+  renderSymbolDropdown(filtered);
+}
+
+function selectSymbol(symbol, base) {
+  document.getElementById('symbolSelect').value = symbol;
+  document.getElementById('symbolInput').value = base + '/USDT';
+  document.getElementById('symbolInput').setAttribute('readonly', '');
+  closeSymbolDropdown();
+  loadAll();
+}
+
+function closeSymbolDropdown() {
+  _symbolDropdownOpen = false;
+  document.getElementById('symbolDropdown').style.display = 'none';
+  // 현재 선택된 값으로 input 복원
+  const sym = document.getElementById('symbolSelect').value;
+  const base = sym.replace('USDT','');
+  document.getElementById('symbolInput').value = base + '/USDT';
+  document.getElementById('symbolInput').setAttribute('readonly', '');
+}
+
+// 외부 클릭 시 드롭다운 닫기
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('symbolSearchWrap');
+  if (wrap && !wrap.contains(e.target)) closeSymbolDropdown();
+});
+
 </body>
 </html>
