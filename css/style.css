@@ -42,7 +42,7 @@
   --bg4:     #2E303C;
 
   /* 毛玻璃背景 */
-  --glass:        rgba(19,20,26,0.75);
+  --glass: #13141A;
   --glass-border: rgba(255,255,255,0.08);
   --glass-hover:  rgba(255,255,255,0.05);
 
@@ -67,7 +67,7 @@
   --bg3:     #EBEBF0;
   --bg4:     #E0E0E8;
 
-  --glass:        rgba(255,255,255,0.80);
+  --glass: #FFFFFF;
   --glass-border: rgba(0,0,0,0.06);
   --glass-hover:  rgba(0,0,0,0.03);
 
@@ -95,19 +95,11 @@ body {
   min-height:100vh;
   overflow-x:hidden;
   line-height:1.6;
-  transition:background 0.3s, color 0.3s;
+  transition:background 0.2s, color 0.2s;
 }
 
 /* 背景光晕 - 营造深度感 */
-[data-theme="dark"] body::before {
-  content:'';
-  position:fixed; inset:0;
-  background:
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(240,185,11,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139,92,246,0.04) 0%, transparent 60%);
-  pointer-events:none;
-  z-index:0;
-}
+[data-theme="dark"] body::before { display:none; }
 
 /* 顶部金色线 */
 body::after {
@@ -126,9 +118,8 @@ body::after {
 
 /* ── 毛玻璃混合类 ─────────────────────────────────────────────────────────── */
 .glass {
-  background:var(--glass);
-  backdrop-filter:blur(20px) saturate(1.5);
-  -webkit-backdrop-filter:blur(20px) saturate(1.5);
+  background:var(--bg1);
+  -webkit-
   border:1px solid var(--glass-border);
 }
 
@@ -139,9 +130,8 @@ body::after {
   gap:12px;
   padding:0 24px;
   height:60px;
-  background:var(--glass);
-  backdrop-filter:blur(24px) saturate(1.8);
-  -webkit-backdrop-filter:blur(24px) saturate(1.8);
+  background:var(--bg1);
+  -webkit-
   border-bottom:1px solid var(--glass-border);
   position:sticky; top:0;
   z-index:500;
@@ -206,7 +196,7 @@ body::after {
   font-weight:700;
   letter-spacing:0.5px;
   cursor:pointer;
-  transition:all 0.2s;
+  transition:border-color 0.15s;
   white-space:nowrap;
 }
 .page-tab:hover { color:var(--text-dim); background:var(--glass-hover); }
@@ -229,7 +219,7 @@ select, .btn {
   border-radius:var(--r);
   cursor:pointer;
   outline:none;
-  transition:all 0.2s;
+  transition:border-color 0.15s;
   -webkit-appearance:none;
   appearance:none;
 }
@@ -278,7 +268,7 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   outline:none;
   width:130px;
   cursor:pointer;
-  transition:all 0.2s;
+  transition:border-color 0.15s;
 }
 .symbol-input:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
 
@@ -295,7 +285,7 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   align-items:center;
   justify-content:center;
   flex-shrink:0;
-  transition:all 0.2s;
+  transition:border-color 0.15s;
 }
 #themeToggle:hover { background:var(--bg4); border-color:var(--gold); color:var(--gold); }
 
@@ -342,9 +332,8 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   grid-template-columns:auto 1fr auto;
   gap:28px;
   align-items:center;
-  background:var(--glass);
-  backdrop-filter:blur(20px) saturate(1.5);
-  -webkit-backdrop-filter:blur(20px) saturate(1.5);
+  background:var(--bg1);
+  -webkit-
   border:1px solid var(--glass-border);
   border-left:3px solid var(--gold);
   border-radius:var(--r-xl);
@@ -353,12 +342,7 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   position:relative;
   overflow:hidden;
 }
-.price-hero::before {
-  content:'';
-  position:absolute; inset:0;
-  background:radial-gradient(ellipse at 0% 50%, rgba(240,185,11,0.06) 0%, transparent 50%);
-  pointer-events:none;
-}
+
 .price-main { display:flex; flex-direction:column; gap:6px; }
 .price-symbol {
   font-family:var(--mono);
@@ -392,9 +376,8 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
 
 /* ── 综合评分 ─────────────────────────────────────────────────────────────── */
 .score-section {
-  background:var(--glass);
-  backdrop-filter:blur(20px) saturate(1.5);
-  -webkit-backdrop-filter:blur(20px) saturate(1.5);
+  background:var(--bg1);
+  -webkit-
   border:1px solid var(--glass-border);
   border-radius:var(--r-xl);
   padding:22px 28px;
@@ -402,12 +385,7 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   position:relative;
   overflow:hidden;
 }
-.score-section::before {
-  content:'';
-  position:absolute; inset:0;
-  background:radial-gradient(ellipse at 50% 0%, rgba(240,185,11,0.05) 0%, transparent 60%);
-  pointer-events:none;
-}
+
 .score-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
 .score-meter-wrap { display:grid; grid-template-columns:1fr 120px 1fr; align-items:center; gap:16px; }
 .score-bar-track { height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; }
@@ -446,9 +424,8 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
 
 /* ── 面板卡片 ─────────────────────────────────────────────────────────────── */
 .panel {
-  background:var(--glass);
-  backdrop-filter:blur(16px) saturate(1.4);
-  -webkit-backdrop-filter:blur(16px) saturate(1.4);
+  background:var(--bg1);
+  -webkit-
   border:1px solid var(--glass-border);
   border-radius:var(--r-lg);
   overflow:hidden;
@@ -570,7 +547,7 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   border-radius:var(--r-lg);
   padding:16px 18px;
   display:flex; flex-direction:column; gap:8px;
-  transition:all 0.2s;
+  transition:border-color 0.15s;
 }
 .futures-card:hover { border-color:var(--gold); background:rgba(240,185,11,0.04); }
 .futures-card-label { font-size:11px; color:var(--text-muted); letter-spacing:0.5px; text-transform:uppercase; }
@@ -717,10 +694,9 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
 /* 直播 */
 .streamer-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
 .streamer-card {
-  background:var(--glass); border:1px solid var(--glass-border);
-  border-radius:var(--r-lg); padding:16px 18px;
-  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-  transition:all 0.2s; position:relative; overflow:hidden;
+  background:var(--bg1); border:1px solid var(--glass-border);
+  border-radius:var(--r-lg); padding:16px 18px; -webkit-
+  transition:border-color 0.15s; position:relative; overflow:hidden;
 }
 .streamer-card:hover { border-color:var(--gold); transform:translateY(-2px); box-shadow:var(--shadow-gold); }
 .rank-badge { font-family:var(--mono); font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; flex-shrink:0; }
@@ -736,9 +712,8 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   position:fixed;
   bottom:0; left:0; right:0;
   z-index:9999;
-  background:var(--glass);
-  backdrop-filter:blur(24px) saturate(1.8);
-  -webkit-backdrop-filter:blur(24px) saturate(1.8);
+  background:var(--bg1);
+  -webkit-
   border-top:1px solid var(--glass-border);
   padding:6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
 }
