@@ -592,7 +592,7 @@ select:focus{border-color:var(--blue);}
   .logo{font-size:10px;letter-spacing:2px;flex-shrink:0;}
   .last-update{display:none;}
   #analysisControls{flex-shrink:0;gap:4px;}
-  #themeToggle{flex-shrink:0;width:28px;height:28px;font-size:12px;}
+  #themeToggle{flex-shrink:0;width:28px;height:28px;font-size:12px;overflow:visible;}
 
   /* controls: 移动端充满可用空间 */
   #analysisControls select{
@@ -736,10 +736,10 @@ select:focus{border-color:var(--blue);}
         oninput="filterSymbols(this.value)"
         onblur="setTimeout(closeSymbolDropdown, 200)"
       />
-      <div id="symbolDropdown" style="display:none;position:absolute;top:100%;left:0;
+      <div id="symbolDropdown" style="display:none;position:fixed;
            background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r);
-           z-index:9999;max-height:280px;overflow-y:auto;min-width:160px;
-           box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+           z-index:99999;max-height:300px;overflow-y:auto;min-width:180px;
+           box-shadow:0 8px 32px rgba(0,0,0,0.6);">
       </div>
     </div>
     <input type="hidden" id="symbolSelect" value="BTCUSDT">
@@ -923,7 +923,7 @@ select:focus{border-color:var(--blue);}
   <div class="grid-2">
     <!-- Trend Indicators -->
     <div class="panel">
-      <div class="panel-header" id="suppPanel">
+      <div class="panel-header" id="trendPanel">
         <div class="panel-title">趋势指标</div>
         <span class="panel-badge badge-blue" id="trendBadge">--</span>
       </div>
@@ -934,7 +934,7 @@ select:focus{border-color:var(--blue);}
 
     <!-- Momentum Indicators -->
     <div class="panel">
-      <div class="panel-header" id="maSysPanel">
+      <div class="panel-header" id="momentumPanel">
         <div class="panel-title">动量指标</div>
         <span class="panel-badge badge-blue" id="momentumBadge">--</span>
       </div>
@@ -947,7 +947,7 @@ select:focus{border-color:var(--blue);}
   <div class="grid-2">
     <!-- Volume Indicators -->
     <div class="panel">
-      <div class="panel-header" id="fibPanel">
+      <div class="panel-header" id="volumePanel">
         <div class="panel-title">成交量指标</div>
         <span class="panel-badge badge-blue" id="volumeBadge">--</span>
       </div>
@@ -958,7 +958,7 @@ select:focus{border-color:var(--blue);}
 
     <!-- Volatility Indicators -->
     <div class="panel">
-      <div class="panel-header" id="vegasPanel">
+      <div class="panel-header" id="volatilityPanel">
         <div class="panel-title">波动率指标</div>
         <span class="panel-badge badge-blue" id="volatilityBadge">--</span>
       </div>
@@ -972,7 +972,7 @@ select:focus{border-color:var(--blue);}
   <div class="grid-2">
     <!-- Ichimoku + ADX -->
     <div class="panel">
-      <div class="panel-header" id="elliottPanel">
+      <div class="panel-header" id="suppPanel">
         <div class="panel-title">补充指标</div>
         <span class="panel-badge badge-blue" id="suppBadge">--</span>
       </div>
@@ -982,7 +982,7 @@ select:focus{border-color:var(--blue);}
     </div>
     <!-- MA System -->
     <div class="panel">
-      <div class="panel-header" id="liqPanel">
+      <div class="panel-header" id="maSysPanel">
         <div class="panel-title">均线系统</div>
         <span class="panel-badge badge-blue" id="maSysBadge">--</span>
       </div>
@@ -997,7 +997,7 @@ select:focus{border-color:var(--blue);}
 
   <!-- Fibonacci Panel -->
   <div class="panel">
-    <div class="panel-header" id="heatPanel">
+    <div class="panel-header" id="fibPanel">
       <div class="panel-title">斐波那契回调位</div>
       <span class="panel-badge badge-blue" id="fibBadge">--</span>
     </div>
@@ -1036,7 +1036,7 @@ select:focus{border-color:var(--blue);}
   <div class="grid-2">
     <!-- Vegas Tunnel -->
     <div class="panel">
-      <div class="panel-header" id="depthPanel">
+      <div class="panel-header" id="vegasPanel">
         <div class="panel-title">维加斯通道</div>
         <span class="panel-badge badge-blue" id="vegasBadge">--</span>
       </div>
@@ -1048,7 +1048,7 @@ select:focus{border-color:var(--blue);}
 
     <!-- Elliott Wave -->
     <div class="panel">
-      <div class="panel-header" id="vpPanel">
+      <div class="panel-header" id="elliottPanel">
         <div class="panel-title">艾略特波浪</div>
         <span class="panel-badge badge-blue" id="elliottBadge">--</span>
       </div>
@@ -1429,6 +1429,10 @@ function openSymbolDropdown() {
   window._symbolDropdownOpen = true;
   inp.value = '';
   inp.placeholder = '搜索币种...';
+  // position:fixed 기준 좌표 계산
+  const rect = inp.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 4) + 'px';
+  dd.style.left = rect.left + 'px';
   dd.style.display = 'block';
   renderSymbolDropdown(window._allSymbols);
 }
@@ -5161,7 +5165,6 @@ function initCollapse() {
   // Define which panels are collapsible on desktop vs mobile
   // Format: { headerId, bodyId, defaultCollapsed (mobile) }
   const panels = [
-    // Always collapsible
     { h:'trendPanel',      b:'trendList',        mobileCollapsed: false },
     { h:'momentumPanel',   b:'momentumList',      mobileCollapsed: false },
     { h:'volumePanel',     b:'volumeList',        mobileCollapsed: true  },
@@ -5185,9 +5188,6 @@ function initCollapse() {
     const body   = document.getElementById(b);
     if (!header || !body) return;
 
-    // Wrap body in a collapsible wrapper if not already
-    let wrapper = body.closest('.panel-body') || body.parentElement;
-
     header.classList.add('collapsible');
     // Add arrow if not present
     if (!header.querySelector('.panel-collapse-arrow')) {
@@ -5197,15 +5197,21 @@ function initCollapse() {
       header.appendChild(arrow);
     }
 
+    // wrapper는 반드시 header 바로 다음 형제 panel-body
+    const panelBody = header.nextElementSibling;
+    if (!panelBody) return;
+
     // Collapse on mobile by default for secondary panels
     if (isMobile && mobileCollapsed) {
       header.classList.add('collapsed');
-      wrapper.classList.add('collapsed');
+      panelBody.classList.add('collapsed');
     }
 
-    header.addEventListener('click', () => {
+    header.addEventListener('click', (e) => {
+      // 버튼 클릭은 무시
+      if (e.target.closest('button') || e.target.closest('select')) return;
       const isCollapsed = header.classList.toggle('collapsed');
-      wrapper.classList.toggle('collapsed', isCollapsed);
+      panelBody.classList.toggle('collapsed', isCollapsed);
     });
   });
 }
