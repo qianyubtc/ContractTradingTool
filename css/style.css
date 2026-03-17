@@ -803,3 +803,20 @@ select:focus { border-color:var(--blue); }
   font-family:var(--mono); font-size:9px; padding:1px 6px; border-radius:3px;
   animation:pulse-dot 1.5s infinite;
 }
+
+/* 热力图容器强制裁切 */
+#heatmapContainer {
+  position: relative;
+  overflow: hidden;
+}
+.heatmap-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 热力图行结构 */
+.heatmap-row { display:flex; align-items:center; gap:8px; padding:2px 0; }
+.heatmap-label { font-family:var(--mono); font-size:10px; color:var(--text-muted); width:80px; flex-shrink:0; text-align:right; }
+.heatmap-bar-wrap { flex:1; height:18px; position:relative; overflow:hidden; border-radius:2px; background:var(--bg3); }
+.heatmap-bar { height:100%; border-radius:2px; display:flex; align-items:center; padding-left:6px; transition:width 0.4s; }
+.heatmap-val { font-family:var(--mono); font-size:10px; color:var(--text-muted); width:50px; flex-shrink:0; text-align:right; }
