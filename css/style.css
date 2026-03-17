@@ -666,114 +666,11 @@ select:focus { border-color:var(--blue); }
 .symbol-dropdown-item .sym-name { font-weight:700; color:var(--text); }
 
 /* ── 响应式 ───────────────────────────────────────────────────────────────── */
-@media(max-width:1024px) {
-  .main { padding:14px 16px 80px; }
-  .price-hero { grid-template-columns:1fr 1fr; gap:16px; }
-  .mini-chart { display:none; }
-  .futures-grid { grid-template-columns:repeat(2,1fr); }
-  .stat-grid-4  { grid-template-columns:repeat(2,1fr); }
-}
 
-@media(max-width:768px) {
-  body { font-size:13px; }
 
-  /* header */
-  .header { height:48px; padding:0 10px; gap:6px; overflow:visible; }
-  .header .page-tabs { display:none!important; }
-  /* 底部固定tab */
-  nav.page-tabs {
-    position:fixed!important; bottom:0; left:0; right:0;
-    display:flex!important;
-    background:var(--bg1);
-    border:none; border-top:1px solid var(--border2);
-    border-radius:0;
-    padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px)) 4px;
-    gap:0; z-index:9999;
-    justify-content:space-around;
-    backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);
-  }
-  #analysisControls { flex:1; justify-content:flex-end; }
-  .logo { font-size:10px; letter-spacing:2px; }
-  .last-update { display:none; }
-  #themeToggle { flex-shrink:0!important; display:flex!important; min-width:28px; width:28px; height:28px; font-size:12px; }
 
-  /* controls */
-  #analysisControls select { flex:1; min-width:0; max-width:none; font-size:12px; padding:5px 20px 5px 8px; }
-  #symbolSelect { flex:1.5; }
-  #intervalSelect { flex:1; }
-  .btn-primary { padding:6px 10px; font-size:10px; letter-spacing:0; white-space:nowrap; flex-shrink:0; }
 
-  /* main */
-  .main { padding:10px 10px 80px; gap:10px; }
 
-  /* price hero */
-  .price-hero { grid-template-columns:1fr; gap:12px; padding:14px 16px; }
-  .price-value { font-size:28px; }
-  .price-stats { gap:16px; }
-  .stat-value  { font-size:13px; }
-
-  /* score */
-  .score-section { padding:14px 16px; }
-  .score-header  { flex-wrap:wrap; gap:8px; }
-  .score-meter-wrap { grid-template-columns:1fr 80px 1fr; gap:8px; }
-  .score-num-long, .score-num-short { font-size:24px; }
-  #scoreBadge { font-size:11px; padding:5px 12px; width:100%; text-align:center; }
-  .signal-counts { gap:10px; flex-wrap:wrap; }
-
-  /* grids */
-  .grid-2, .grid-3 { grid-template-columns:1fr; }
-  .futures-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
-  .stat-grid-4  { grid-template-columns:repeat(2,1fr); gap:8px; }
-
-  /* panels */
-  .panel-header { padding:10px 12px; cursor:pointer; }
-  .panel-collapse-arrow { display:block!important; }
-  .panel-title { font-size:10px; }
-  .panel-body  { padding:10px 12px; }
-  .panel-badge { font-size:9px; }
-
-  /* indicators */
-  .indicator-row { grid-template-columns:80px 1fr 55px; gap:6px; padding:6px 8px; }
-  .ind-value { display:none; }
-
-  /* cards */
-  .futures-card { padding:10px 12px; }
-  .futures-card-label { font-size:9px; }
-  .futures-card-value { font-size:15px; }
-
-  /* fg */
-  .fg-row { flex-direction:column; align-items:flex-start; gap:12px; }
-  .fg-arc-wrap { width:100%!important; display:flex; justify-content:center; }
-  .fg-arc-wrap svg { width:140px!important; height:78px!important; }
-  .fg-number { font-size:30px!important; }
-
-  /* page tabs */
-  .page-tabs {
-    position:fixed; bottom:0; left:0; right:0;
-    background:var(--bg1);
-    border:none; border-top:1px solid var(--border2);
-    border-radius:0;
-    padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px)) 4px;
-    gap:0; z-index:400;
-    justify-content:space-around;
-    backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);
-  }
-  .page-tab {
-    flex:1; flex-direction:column;
-    padding:5px 2px 6px;
-    gap:3px; font-size:9px;
-    justify-content:center; align-items:center;
-  }
-  .tab-icon { font-size:18px; }
-  .tab-label { font-size:9px; letter-spacing:0; }
-}
-
-@media(max-width:400px) {
-  .page-tab .tab-label { display:none; }
-  .page-tab { padding:6px 4px; }
-}
 
 /* ── 其他功能组件 ─────────────────────────────────────────────────────────── */
 .heatmap-wrap { position:relative; overflow:hidden; }
@@ -833,3 +730,160 @@ select:focus { border-color:var(--blue); }
 .heatmap-bar-wrap { flex:1; height:18px; position:relative; overflow:hidden; border-radius:2px; background:var(--bg3); }
 .heatmap-bar { height:100%; border-radius:2px; display:flex; align-items:center; padding-left:6px; transition:width 0.4s; }
 .heatmap-val { font-family:var(--mono); font-size:10px; color:var(--text-muted); width:50px; flex-shrink:0; text-align:right; }
+
+@media(max-width:1024px) {
+  .main { padding:14px 16px 60px; }
+  .price-hero { grid-template-columns:1fr 1fr; gap:16px; }
+  .mini-chart { display:none; }
+  .futures-grid { grid-template-columns:repeat(2,1fr); }
+  .stat-grid-4  { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ── themeToggle ─────────────────────────────────────────────────────────── */
+#themeToggle {
+  width:32px; height:32px;
+  border-radius:50%;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  color:var(--text-dim);
+  font-size:14px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  transition:all 0.2s;
+}
+#themeToggle:hover { background:var(--bg4); border-color:var(--border3); }
+
+/* ── symbolInput ─────────────────────────────────────────────────────────── */
+.symbol-input {
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:13px;
+  padding:6px 10px;
+  border-radius:var(--r);
+  outline:none;
+  width:120px;
+  cursor:pointer;
+  transition:border-color 0.15s;
+}
+.symbol-input:focus { border-color:var(--blue); }
+
+/* ── 移动端底部Tab Bar ───────────────────────────────────────────────────── */
+.mobile-tab-bar {
+  display:none; /* 默认隐藏，只在移动端显示 */
+  position:fixed;
+  bottom:0; left:0; right:0;
+  z-index:9999;
+  background:var(--bg1);
+  border-top:1px solid var(--border2);
+  padding:4px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.mobile-tab {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding:5px 2px;
+  background:none;
+  border:none;
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:color 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.mobile-tab.active { color:var(--green); }
+.mobile-tab[data-page="event"].active    { color:var(--amber); }
+.mobile-tab[data-page="monitor"].active  { color:var(--cyan); }
+.mobile-tab[data-page="calc"].active     { color:var(--purple); }
+.mobile-tab[data-page="live"].active     { color:#ff6b9d; }
+.mobile-tab-icon  { font-size:20px; line-height:1; }
+.mobile-tab-label { font-size:10px; font-family:var(--sans); }
+
+/* ── 响应式 ───────────────────────────────────────────────────────────────── */
+@media(max-width:768px) {
+  /* 显示移动端底部tab，隐藏header内tab */
+  .mobile-tab-bar { display:flex; }
+  .header .page-tabs { display:none!important; }
+  .last-update { display:none; }
+
+  /* header */
+  .header {
+    height:50px;
+    padding:0 10px;
+    gap:6px;
+    overflow:visible;
+  }
+
+  /* header controls */
+  #analysisControls {
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    justify-content:flex-end;
+    overflow:visible;
+    flex-wrap:nowrap;
+  }
+  .symbol-input { width:95px; font-size:12px; padding:5px 8px; }
+  #intervalSelect { width:72px; font-size:12px; padding:5px 22px 5px 7px; }
+  .btn-primary { padding:5px 10px; font-size:11px; letter-spacing:0; flex-shrink:0; }
+  #themeToggle  { width:30px; height:30px; font-size:13px; flex-shrink:0; }
+
+  /* main content - 底部留出tab bar高度 */
+  .main { padding:10px 10px calc(70px + env(safe-area-inset-bottom, 0px)) 10px; gap:10px; }
+
+  /* price */
+  .price-hero  { grid-template-columns:1fr; gap:12px; padding:14px 16px; }
+  .price-value { font-size:28px; }
+  .price-stats { gap:16px; }
+  .stat-value  { font-size:13px; }
+
+  /* score */
+  .score-section { padding:14px 16px; }
+  .score-header  { flex-wrap:wrap; gap:8px; }
+  .score-meter-wrap { grid-template-columns:1fr 80px 1fr; gap:8px; }
+  .score-num-long, .score-num-short { font-size:26px; }
+  #scoreBadge { font-size:11px; padding:6px 14px; width:100%; text-align:center; }
+  .signal-counts { gap:10px; flex-wrap:wrap; }
+
+  /* grids */
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .futures-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+  .stat-grid-4  { grid-template-columns:repeat(2,1fr); gap:8px; }
+
+  /* panels */
+  .panel-header { padding:10px 12px; cursor:pointer; }
+  .panel-collapse-arrow { display:block!important; }
+  .panel-title  { font-size:10px; }
+  .panel-body   { padding:10px 12px; }
+  .panel-badge  { font-size:9px; }
+
+  /* indicators */
+  .indicator-row { grid-template-columns:80px 1fr 55px; gap:6px; padding:6px 8px; }
+  .ind-value { display:none; }
+
+  /* cards */
+  .futures-card { padding:10px 12px; }
+  .futures-card-label { font-size:9px; }
+  .futures-card-value { font-size:15px; }
+
+  /* fg */
+  .fg-row { flex-direction:column; align-items:flex-start; gap:12px; }
+  .fg-arc-wrap { width:100%!important; display:flex; justify-content:center; }
+  .fg-arc-wrap svg { width:140px!important; height:78px!important; }
+  .fg-number { font-size:30px!important; }
+}
+
+@media(max-width:400px) {
+  .mobile-tab-label { display:none; }
+  .mobile-tab { padding:8px 2px; }
+  .mobile-tab-icon { font-size:22px; }
+}

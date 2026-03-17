@@ -15,8 +15,10 @@ function switchPage(page) {
   const isMob = window.innerWidth <= 768;
   ctrl.style.display = (page === 'analysis' || isMob) ? 'flex' : 'none';
 
-  // 移动端 bottom tab bar 高亮
-  if (typeof updateMobileBar === 'function') updateMobileBar(page);
+  // 移动端底部tab高亮
+  document.querySelectorAll('.mobile-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.page === page);
+  });
 
   // Load page data
   // event 페이지는 placeholder, JS 렌더링 건너뜀

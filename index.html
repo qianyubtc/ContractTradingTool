@@ -39,9 +39,7 @@
   <div class="header-controls" id="analysisControls">
     <div class="symbol-search-wrap" id="symbolSearchWrap">
       <input type="text" id="symbolInput" placeholder="BTC/USDT" autocomplete="off"
-        style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);
-               font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:var(--r);
-               outline:none;width:120px;cursor:pointer;"
+        class="symbol-input"
         onclick="openSymbolDropdown()"
         oninput="filterSymbols(this.value)"
         onblur="setTimeout(closeSymbolDropdown, 200)"
@@ -63,11 +61,7 @@
     <div class="status-dot" id="statusDot"></div>
   </div>
   <div class="last-update" id="lastUpdate">--</div>
-  <button id="themeToggle" onclick="toggleTheme()" title="切换亮暗模式"
-    style="width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);
-           color:var(--text-dim);font-size:14px;cursor:pointer;display:flex;align-items:center;
-           justify-content:center;flex-shrink:0;transition:all 0.2s;"
-    onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">🌙</button>
+  <button id="themeToggle" onclick="toggleTheme()" title="切换亮暗模式">🌙</button>
 </div>
 
 <!-- Pages Container -->
@@ -659,5 +653,29 @@
   <script src="js/render.js"></script>
   <script src="js/analysis.js"></script>
   <script src="js/app.js"></script>
+
+<!-- 移动端底部Tab Bar -->
+<nav id="mobileTabBar" class="mobile-tab-bar">
+  <button class="mobile-tab active" data-page="analysis" onclick="switchPage('analysis')">
+    <span class="mobile-tab-icon">◎</span>
+    <span class="mobile-tab-label">合约分析</span>
+  </button>
+  <button class="mobile-tab" data-page="event" onclick="switchPage('event')">
+    <span class="mobile-tab-icon">◈</span>
+    <span class="mobile-tab-label">事件合约</span>
+  </button>
+  <button class="mobile-tab" data-page="monitor" onclick="switchPage('monitor')">
+    <span class="mobile-tab-icon">◉</span>
+    <span class="mobile-tab-label">数据监控</span>
+  </button>
+  <button class="mobile-tab" data-page="calc" onclick="switchPage('calc')">
+    <span class="mobile-tab-icon">▦</span>
+    <span class="mobile-tab-label">计算器</span>
+  </button>
+  <button class="mobile-tab" data-page="live" onclick="switchPage('live')">
+    <span class="mobile-tab-icon">◐</span>
+    <span class="mobile-tab-label">广场直播</span>
+  </button>
+</nav>
 </body>
 </html>
