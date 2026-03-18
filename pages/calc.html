@@ -1,10 +1,243 @@
 <div class="main">
-    <div class="section-label">合约计算器</div>
-    <div class="panel" style="text-align:center;">
-      <div class="panel-body" style="padding:80px 20px;">
-        <div style="font-size:40px;margin-bottom:16px;opacity:0.3">▦</div>
-        <div style="font-family:var(--mono);font-size:14px;color:var(--text-muted);letter-spacing:2px;">COMING SOON</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">合约计算器模块正在开发中...</div>
+  <div class="section-label">合约计算器</div>
+
+  <!-- 无分析数据提示 -->
+  <div id="calcNoDataTip" style="display:none;">
+    <div class="panel">
+      <div class="panel-body" style="text-align:center;padding:32px 20px;">
+        <div style="font-size:32px;margin-bottom:12px;">📊</div>
+        <div style="font-size:14px;color:var(--text-dim);margin-bottom:16px;">请先在「合约分析」页加载数据<br>计算器将自动获取支撑阻力位和技术指标</div>
+        <button onclick="switchPage('analysis')" style="background:var(--gold);color:#000;font-weight:700;font-family:var(--mono);font-size:12px;padding:8px 20px;border:none;border-radius:var(--r-lg);cursor:pointer;letter-spacing:1px;">前往分析</button>
       </div>
     </div>
   </div>
+
+  <!-- 主体 -->
+  <div id="calcMain">
+
+    <!-- 输入区 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">开仓参数</div>
+        <span class="panel-badge badge-blue" id="calcCurrentPrice">当前价: --</span>
+      </div>
+      <div class="panel-body">
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+          <!-- 币种 + 方向 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <div class="calc-label">币种</div>
+              <div style="display:flex;gap:6px;">
+                <button class="calc-coin-btn active" id="calcBtnBTC" onclick="calcSelectCoin('BTC')">BTC</button>
+                <button class="calc-coin-btn" id="calcBtnETH" onclick="calcSelectCoin('ETH')">ETH</button>
+                <button class="calc-coin-btn" id="calcBtnCustom" onclick="calcSelectCoin('custom')">自定义</button>
+              </div>
+              <input type="text" id="calcCustomSymbol" placeholder="如 SOL" style="display:none;margin-top:6px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:var(--r);outline:none;width:100%;" oninput="calcOnCustomSymbol()"/>
+            </div>
+            <div>
+              <div class="calc-label">方向</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <button class="calc-dir-btn bull active" id="calcBtnLong" onclick="calcSelectDir('long')">▲ 做多</button>
+                <button class="calc-dir-btn bear" id="calcBtnShort" onclick="calcSelectDir('short')">▼ 做空</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 模式 -->
+          <div>
+            <div class="calc-label">保证金模式</div>
+            <div style="display:flex;gap:6px;">
+              <button class="calc-mode-btn active" id="calcBtnCross" onclick="calcSelectMode('cross')">全仓</button>
+              <button class="calc-mode-btn" id="calcBtnIsolated" onclick="calcSelectMode('isolated')">逐仓</button>
+            </div>
+          </div>
+
+          <!-- 账户余额（全仓时显示） -->
+          <div id="calcBalanceRow">
+            <div class="calc-label">账户余额 (USDT)</div>
+            <input type="number" id="calcBalance" value="1000" min="1" placeholder="账户总余额"
+              style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 12px;border-radius:var(--r);outline:none;width:100%;" oninput="calcUpdate()"/>
+          </div>
+
+          <!-- 保证金 -->
+          <div>
+            <div class="calc-label">下单保证金 (USDT)</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="number" id="calcMargin" value="100" min="1" placeholder="保证金数量"
+                style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 12px;border-radius:var(--r);outline:none;flex:1;min-width:100px;" oninput="calcUpdate()"/>
+              <button class="calc-quick-btn" onclick="calcSetMarginPct(10)">10%</button>
+              <button class="calc-quick-btn" onclick="calcSetMarginPct(20)">20%</button>
+              <button class="calc-quick-btn" onclick="calcSetMarginPct(50)">50%</button>
+            </div>
+          </div>
+
+          <!-- 杠杆 -->
+          <div>
+            <div class="calc-label" style="display:flex;justify-content:space-between;">
+              <span>杠杆倍数</span>
+              <span style="color:var(--gold);font-family:var(--mono);font-weight:700;" id="calcLevDisplay">10x</span>
+            </div>
+            <input type="range" id="calcLevSlider" min="1" max="125" value="10" step="1"
+              style="width:100%;accent-color:var(--gold);margin:6px 0;" oninput="calcLevSliderChange()"/>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+              <button class="calc-quick-btn" onclick="calcSetLev(1)">1x</button>
+              <button class="calc-quick-btn" onclick="calcSetLev(5)">5x</button>
+              <button class="calc-quick-btn" onclick="calcSetLev(10)">10x</button>
+              <button class="calc-quick-btn" onclick="calcSetLev(20)">20x</button>
+              <button class="calc-quick-btn" onclick="calcSetLev(50)">50x</button>
+              <button class="calc-quick-btn" onclick="calcSetLev(100)">100x</button>
+            </div>
+          </div>
+
+          <!-- 开仓价 -->
+          <div>
+            <div class="calc-label">开仓价格 (USDT)</div>
+            <div style="display:flex;gap:8px;">
+              <input type="number" id="calcEntryPrice" placeholder="输入开仓价" step="any"
+                style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 12px;border-radius:var(--r);outline:none;flex:1;" oninput="calcUpdate()"/>
+              <button onclick="calcUseCurrentPrice()" style="background:var(--gold-dim);color:var(--gold);border:1px solid rgba(240,185,11,0.3);font-size:11px;padding:6px 12px;border-radius:var(--r);cursor:pointer;font-family:var(--mono);white-space:nowrap;font-weight:700;">当前价</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 核心结果 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">计算结果</div>
+        <span class="panel-badge" id="calcRiskBadge">--</span>
+      </div>
+      <div class="panel-body">
+        <div class="futures-grid" style="margin-bottom:14px;">
+          <div class="futures-card">
+            <div class="futures-card-label">爆仓价</div>
+            <div class="futures-card-value" id="calcLiqPrice" style="color:var(--red);">--</div>
+            <div class="futures-card-sub" id="calcLiqDist">--</div>
+          </div>
+          <div class="futures-card">
+            <div class="futures-card-label">仓位价值</div>
+            <div class="futures-card-value" id="calcPositionValue">--</div>
+            <div class="futures-card-sub" id="calcPositionCoins">--</div>
+          </div>
+          <div class="futures-card">
+            <div class="futures-card-label">实际杠杆</div>
+            <div class="futures-card-value" id="calcRealLev">--</div>
+            <div class="futures-card-sub" id="calcMarginRatio">--</div>
+          </div>
+          <div class="futures-card">
+            <div class="futures-card-label">最大亏损</div>
+            <div class="futures-card-value" id="calcMaxLoss" style="color:var(--red);">--</div>
+            <div class="futures-card-sub" id="calcMaxLossPct">--</div>
+          </div>
+        </div>
+
+        <!-- 风险评级 -->
+        <div id="calcRiskBar" style="padding:12px 14px;border-radius:var(--r-lg);background:var(--bg2);font-size:13px;line-height:1.7;"></div>
+      </div>
+    </div>
+
+    <!-- 止损止盈 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">止损 / 止盈</div>
+        <div style="display:flex;gap:6px;margin-left:auto;">
+          <button class="calc-mode-btn active" id="calcSLBtnAuto" onclick="calcSelectSLMode('auto')">自动</button>
+          <button class="calc-mode-btn" id="calcSLBtnManual" onclick="calcSelectSLMode('manual')">手动</button>
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <!-- 自动模式（基于ATR） -->
+        <div id="calcSLAutoArea">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">基于 ATR 动态计算，止损=1.5×ATR，止盈=3×ATR（风险回报比 1:2）</div>
+          <div class="futures-grid">
+            <div class="futures-card">
+              <div class="futures-card-label">建议止损价</div>
+              <div class="futures-card-value" id="calcAutoSL" style="color:var(--red);">--</div>
+              <div class="futures-card-sub" id="calcAutoSLDist">--</div>
+            </div>
+            <div class="futures-card">
+              <div class="futures-card-label">建议止盈价</div>
+              <div class="futures-card-value" id="calcAutoTP" style="color:var(--green);">--</div>
+              <div class="futures-card-sub" id="calcAutoTPDist">--</div>
+            </div>
+            <div class="futures-card">
+              <div class="futures-card-label">止损亏损</div>
+              <div class="futures-card-value" id="calcAutoSLLoss" style="color:var(--red);">--</div>
+            </div>
+            <div class="futures-card">
+              <div class="futures-card-label">止盈收益</div>
+              <div class="futures-card-value" id="calcAutoTPGain" style="color:var(--green);">--</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 手动模式 -->
+        <div id="calcSLManualArea" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+            <div>
+              <div class="calc-label">止损价格</div>
+              <input type="number" id="calcManualSL" placeholder="止损价" step="any"
+                style="background:var(--bg3);border:1px solid rgba(246,70,93,0.3);color:var(--text);font-family:var(--mono);font-size:13px;padding:7px 10px;border-radius:var(--r);outline:none;width:100%;" oninput="calcUpdate()"/>
+            </div>
+            <div>
+              <div class="calc-label">止盈价格</div>
+              <input type="number" id="calcManualTP" placeholder="止盈价" step="any"
+                style="background:var(--bg3);border:1px solid rgba(14,203,129,0.3);color:var(--text);font-family:var(--mono);font-size:13px;padding:7px 10px;border-radius:var(--r);outline:none;width:100%;" oninput="calcUpdate()"/>
+            </div>
+          </div>
+          <div class="futures-grid">
+            <div class="futures-card">
+              <div class="futures-card-label">止损亏损</div>
+              <div class="futures-card-value" id="calcManualSLLoss" style="color:var(--red);">--</div>
+              <div class="futures-card-sub" id="calcManualSLPct">--</div>
+            </div>
+            <div class="futures-card">
+              <div class="futures-card-label">止盈收益</div>
+              <div class="futures-card-value" id="calcManualTPGain" style="color:var(--green);">--</div>
+              <div class="futures-card-sub" id="calcManualTPPct">--</div>
+            </div>
+            <div class="futures-card">
+              <div class="futures-card-label">风险回报比</div>
+              <div class="futures-card-value" id="calcRRR">--</div>
+            </div>
+            <div class="futures-card">
+              <div class="futures-card-label">止损距离</div>
+              <div class="futures-card-value" id="calcSLDist">--</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 支撑阻力 + 综合建议 -->
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">支撑 / 阻力位</div>
+          <span class="panel-badge badge-amber" id="calcSRBadge">来自分析</span>
+        </div>
+        <div class="panel-body">
+          <div id="calcSRList" style="display:flex;flex-direction:column;gap:8px;">
+            <div style="color:var(--text-muted);font-size:13px;">请先在合约分析页加载数据</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">综合建议</div>
+        </div>
+        <div class="panel-body">
+          <div id="calcAdviceList" style="display:flex;flex-direction:column;gap:10px;">
+            <div style="color:var(--text-muted);font-size:13px;">填写参数后自动生成</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
