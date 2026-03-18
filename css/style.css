@@ -71,9 +71,9 @@
   --glass-border: rgba(0,0,0,0.06);
   --glass-hover:  rgba(0,0,0,0.03);
 
-  --border:  rgba(0,0,0,0.06);
-  --border2: rgba(0,0,0,0.10);
-  --border3: rgba(0,0,0,0.18);
+  --border:  rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --border3: rgba(0,0,0,0.22);
 
   --text:       #1A1B23;
   --text-dim:   #4A5568;
@@ -425,14 +425,13 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
 /* ── 面板卡片 ─────────────────────────────────────────────────────────────── */
 .panel {
   background:var(--bg1);
-  -webkit-
-  border:1px solid var(--glass-border);
+  border:1px solid var(--border2);
   border-radius:var(--r-lg);
   overflow:hidden;
   box-shadow:var(--shadow-sm);
   transition:border-color 0.2s, transform 0.2s;
 }
-.panel:hover { border-color:var(--border2); }
+.panel:hover { border-color:var(--border3); }
 
 .panel-header {
   display:flex;
