@@ -1,10 +1,92 @@
-<div class="main" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
-    <div style="text-align:center;padding:40px 20px;">
-      <div style="font-size:48px;margin-bottom:16px;">📊</div>
-      <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;">数据监控</div>
-      <div style="font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:2px;margin-bottom:16px;">COMING SOON</div>
-      <div style="font-size:13px;color:var(--text-muted);line-height:1.8;">
-        链上大额仓位监控、聪明钱追踪、资金费率历史、持仓量变化等功能正在开发中
+<div class="main">
+  <div class="section-label">数据监控</div>
+
+  <!-- 刷新控制 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div style="font-size:12px;color:var(--text-muted);font-family:var(--mono);">数据每60秒自动刷新 · <span id="monLastUpdate">--</span></div>
+    <button onclick="loadMonitor(true)" style="background:none;border:1px solid var(--border2);color:var(--text-muted);font-size:11px;padding:5px 14px;border-radius:var(--r);cursor:pointer;font-family:var(--mono);">⟳ 立即刷新</button>
+  </div>
+
+  <!-- ① 黑马信号 -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">🔥 黑马信号</div>
+      <span class="panel-badge badge-red" id="monHorseBadge">扫描中</span>
+    </div>
+    <div class="panel-body">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">综合成交量放大、价格涨幅、OI增长、资金费率异常，识别当前最具潜力的异动币种</div>
+      <div id="monHorseList" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="color:var(--text-muted);font-size:13px;">扫描中...</div>
       </div>
     </div>
   </div>
+
+  <!-- ② 价格异动 -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">价格异动预警</div>
+      <span class="panel-badge badge-amber" id="monPriceBadge">--</span>
+    </div>
+    <div class="panel-body">
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="mon-filter-btn active" onclick="monFilterPrice('up', this)">▲ 涨幅榜</button>
+        <button class="mon-filter-btn" onclick="monFilterPrice('down', this)">▼ 跌幅榜</button>
+        <button class="mon-filter-btn" onclick="monFilterPrice('vol', this)">📊 量能榜</button>
+      </div>
+      <div id="monPriceList" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- ③ 资金费率排行 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">资金费率排行</div>
+        <span class="panel-badge badge-blue" id="monFrBadge">--</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">费率极高→多头过热；费率极低→空头过热</div>
+        <div id="monFrList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+
+    <!-- ④ 大额清算 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">大额清算</div>
+        <span class="panel-badge badge-red" id="monLiqBadge">--</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">近期大额爆仓订单，方向可作为情绪参考</div>
+        <div id="monLiqList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- ⑤ 持仓量异动 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">持仓量异动</div>
+        <span class="panel-badge badge-purple" id="monOIBadge">--</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">OI大幅增加→主力建仓；OI大幅减少→主力离场</div>
+        <div id="monOIList" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+
+    <!-- ⑥ 多空比监控 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">多空比监控</div>
+        <span class="panel-badge badge-blue" id="monLSBadge">--</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">多空比极端时往往预示反转</div>
+        <div id="monLSList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>

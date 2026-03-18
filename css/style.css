@@ -1036,3 +1036,61 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
 }
 .calc-advice-item:last-child { border-bottom:none; }
 .calc-advice-icon { flex-shrink:0; font-size:14px; }
+
+/* ── 数据监控页面 ─────────────────────────────────────────────────────────── */
+.mon-filter-btn {
+  padding:4px 12px;
+  border-radius:var(--r);
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:700;
+  border:1px solid var(--border2);
+  background:var(--bg3);
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.mon-filter-btn.active { background:var(--gold-dim); color:var(--gold); border-color:rgba(240,185,11,0.4); }
+.mon-filter-btn:hover  { border-color:var(--gold); color:var(--gold); }
+
+.mon-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  border-radius:var(--r);
+  background:var(--bg2);
+  transition:background 0.15s;
+}
+.mon-row:hover { background:var(--bg3); }
+.mon-symbol { font-family:var(--mono); font-size:12px; font-weight:700; color:var(--text); width:80px; flex-shrink:0; }
+.mon-bar-wrap { flex:1; height:4px; background:var(--bg3); border-radius:2px; overflow:hidden; }
+.mon-bar { height:100%; border-radius:2px; transition:width 0.8s; }
+.mon-val { font-family:var(--mono); font-size:12px; font-weight:700; width:70px; text-align:right; flex-shrink:0; }
+.mon-sub { font-size:10px; color:var(--text-muted); width:60px; text-align:right; flex-shrink:0; }
+
+/* 黑马信号行 */
+.horse-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:var(--r-lg);
+  background:var(--bg2);
+  border:1px solid transparent;
+  transition:all 0.2s;
+}
+.horse-row:hover { border-color:var(--gold); background:var(--gold-dim); }
+.horse-rank { font-family:var(--mono); font-size:14px; font-weight:700; width:24px; flex-shrink:0; }
+.horse-symbol { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--text); width:90px; flex-shrink:0; }
+.horse-score-wrap { flex:1; }
+.horse-score-bar { height:6px; border-radius:3px; background:linear-gradient(90deg,var(--gold),var(--green)); transition:width 0.8s; }
+.horse-signals { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.horse-signal-tag {
+  font-size:9px; font-family:var(--mono);
+  padding:1px 6px; border-radius:10px;
+  background:var(--gold-dim); color:var(--gold);
+  border:1px solid rgba(240,185,11,0.2);
+}
+.horse-price { font-family:var(--mono); font-size:13px; font-weight:700; width:100px; text-align:right; flex-shrink:0; }
+.horse-change { font-family:var(--mono); font-size:12px; font-weight:700; width:60px; text-align:right; flex-shrink:0; }

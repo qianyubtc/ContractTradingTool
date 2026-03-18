@@ -48,7 +48,7 @@ function switchPage(page) {
   // Load page data
   loadPageContent(page).then(() => {
     if (page === 'event'   && typeof loadEventPage === 'function') loadEventPage();
-    if (page === 'monitor' && typeof loadMonitor   === 'function') loadMonitor();
+    if (page === 'monitor' && typeof loadMonitor   === 'function') loadMonitor(false);
     if (page === 'live'    && typeof loadLivePage  === 'function') loadLivePage();
     if (page === 'calc'    && typeof loadCalcPage   === 'function') loadCalcPage();
   });
