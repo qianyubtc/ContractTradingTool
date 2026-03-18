@@ -136,7 +136,7 @@ async function loadAll(silent=false) {
 
     // Indicators
     document.getElementById('loaderText').textContent = '生成信号分析...';
-    const { indicators, closes, fib, vegas, elliott } = analyzeAll(klinesData);
+    const { indicators, closes, highs, lows, volumes, fib, vegas, elliott } = analyzeAll(klinesData);
 
     // Mini chart
     updateMiniChart(closes.slice(-60));
