@@ -839,3 +839,114 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+
+/* ── 事件合约页面 ─────────────────────────────────────────────────────────── */
+.ev-coin-btn {
+  padding:6px 16px;
+  border-radius:20px;
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:1px;
+  border:1px solid var(--border2);
+  background:var(--bg3);
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.ev-coin-btn.active { background:var(--gold-dim); color:var(--gold); border-color:rgba(240,185,11,0.4); }
+.ev-coin-btn:hover  { border-color:var(--gold); color:var(--gold); }
+
+.ev-time-btn {
+  padding:6px 14px;
+  border-radius:var(--r);
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:700;
+  border:1px solid var(--border2);
+  background:var(--bg3);
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.ev-time-btn.active { background:var(--gold-dim); color:var(--gold); border-color:rgba(240,185,11,0.4); }
+.ev-time-btn:hover  { border-color:var(--gold); color:var(--gold); }
+
+.ev-quick-btn {
+  padding:6px 14px;
+  border-radius:var(--r);
+  font-family:var(--mono);
+  font-size:12px;
+  border:1px solid var(--border2);
+  background:var(--bg3);
+  color:var(--text-dim);
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.ev-quick-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+.ev-order-btn {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:16px;
+  border-radius:var(--r-lg);
+  font-family:var(--mono);
+  font-size:14px;
+  font-weight:700;
+  border:none;
+  cursor:pointer;
+  transition:all 0.2s;
+  letter-spacing:1px;
+}
+.ev-order-btn.bull {
+  background:rgba(14,203,129,0.15);
+  color:var(--green);
+  border:1.5px solid rgba(14,203,129,0.4);
+}
+.ev-order-btn.bull:hover {
+  background:rgba(14,203,129,0.25);
+  box-shadow:0 4px 20px rgba(14,203,129,0.2);
+  transform:translateY(-1px);
+}
+.ev-order-btn.bear {
+  background:rgba(246,70,93,0.15);
+  color:var(--red);
+  border:1.5px solid rgba(246,70,93,0.4);
+}
+.ev-order-btn.bear:hover {
+  background:rgba(246,70,93,0.25);
+  box-shadow:0 4px 20px rgba(246,70,93,0.2);
+  transform:translateY(-1px);
+}
+.ev-order-btn:active { transform:translateY(0); }
+
+/* 持仓订单行 */
+.ev-position-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  flex-wrap:wrap;
+}
+.ev-position-row:last-child { border-bottom:none; }
+
+/* 历史订单行 */
+.ev-hist-row {
+  display:grid;
+  grid-template-columns:auto 1fr auto auto auto;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid var(--border);
+  font-size:12px;
+}
+.ev-hist-row:last-child { border-bottom:none; }
+
+@media(max-width:768px) {
+  .ev-hist-row { grid-template-columns:auto 1fr auto; gap:6px; }
+  .ev-hist-time, .ev-hist-entry { display:none; }
+}
