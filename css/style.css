@@ -780,13 +780,15 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
 
   /* score */
   .score-section    { padding:14px 16px; border-radius:var(--r-lg); overflow:visible; }
-  .score-header     { flex-wrap:wrap; gap:6px; align-items:center; }
-  .score-header > div:first-child { white-space:nowrap; }
-  #scoreBadge       { max-width:none; }
-  #briefBtn         { font-size:10px; padding:4px 8px; white-space:nowrap; margin-left:auto; }
-  .score-meter-wrap { grid-template-columns:1fr 72px 1fr; gap:6px; }
-  .score-num-long, .score-num-short { font-size:24px; }
-  #scoreBadge { font-size:11px; padding:7px 14px; width:100%; text-align:center; }
+  .score-header     { flex-wrap:nowrap; gap:6px; align-items:center; }
+  .score-header > div:first-child { flex:1; white-space:nowrap; }
+  #briefBtn         { font-size:10px; padding:4px 10px; white-space:nowrap; flex-shrink:0; margin-left:0; }
+  #scoreBadge       { width:100%; text-align:center; font-size:12px; padding:7px 14px; margin-top:6px; display:block; }
+  .score-meter-wrap { display:flex; flex-direction:column; gap:12px; }
+  .score-center     { order:0; text-align:center; }
+  .score-label-main { display:block; }
+  .score-num-long, .score-num-short { font-size:26px; }
+  .score-bar-track  { height:8px; }
   .signal-counts { gap:10px; }
 
   /* grids */
