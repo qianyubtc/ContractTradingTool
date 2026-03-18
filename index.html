@@ -66,166 +66,198 @@
 
 <!-- Pages Container -->
 <div id="pageAnalysis" class="page-view active">
-<!-- Main -->
 <div class="main">
 
-  <div class="error-banner" id="errorBanner"></div>
-
-  <!-- Price Hero -->
+  <!-- ① 价格模块 -->
   <div class="price-hero" id="priceHero">
     <div class="price-main">
       <div class="price-symbol" id="priceSymbol">BTC/USDT</div>
       <div class="price-value" id="priceValue">--</div>
       <div class="price-change" id="priceChange">--</div>
     </div>
-    <div class="price-stats" id="priceStats">
+    <div class="price-stats">
       <div class="stat-item"><div class="stat-label">24H HIGH</div><div class="stat-value" id="stat24h">--</div></div>
       <div class="stat-item"><div class="stat-label">24H LOW</div><div class="stat-value" id="stat24l">--</div></div>
       <div class="stat-item"><div class="stat-label">24H VOL</div><div class="stat-value" id="stat24v">--</div></div>
       <div class="stat-item"><div class="stat-label">MKT CAP</div><div class="stat-value" id="statMC">--</div></div>
     </div>
-    <svg class="mini-chart" id="miniChart" viewBox="0 0 200 60" preserveAspectRatio="none">
-      <polyline id="miniChartLine" fill="none" stroke="var(--green)" stroke-width="1.5" points=""/>
-      <polyline id="miniChartFill" fill="url(#chartGrad)" stroke="none" points=""/>
-      <defs>
-        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
-          <stop offset="100%" stop-color="var(--green)" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-    </svg>
+    <canvas class="mini-chart" id="miniChart" width="180" height="52"></canvas>
   </div>
 
-  <!-- Score -->
-  <div class="score-section" id="scoreSection">
-    <div class="score-header" style="display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap;">
-      <span style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;">综合评分</span>
-      <span class="panel-badge badge-blue" id="scoreBadge">计算中...</span>
-      <button onclick="openBrief()" id="briefBtn" style="margin-left:auto;padding:6px 16px;border-radius:5px;background:rgba(61,158,255,0.12);border:1px solid rgba(61,158,255,0.35);color:var(--blue);font-family:var(--mono);font-size:10px;letter-spacing:1px;cursor:pointer;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:5px;" onmouseover="this.style.background='rgba(61,158,255,0.2)'" onmouseout="this.style.background='rgba(61,158,255,0.12)'">
-        <span style="font-size:12px;">📋</span> 生成简报
-      </button>
+  <!-- ② 综合评分 -->
+  <div class="score-section">
+    <div class="score-header">
+      <div style="font-size:12px;color:var(--text-muted);font-family:var(--mono);letter-spacing:1px;">综合评分</div>
+      <span class="panel-badge" id="scoreBadge">计算中...</span>
+      <button class="btn" id="briefBtn" onclick="openBrief()" style="margin-left:auto;font-size:11px;padding:5px 12px;display:flex;align-items:center;gap:5px;">📋 生成简报</button>
     </div>
     <div class="score-meter-wrap">
       <div>
-        <div class="score-bar-track">
-          <div class="score-bar-long" id="scoreBarLong" style="width:0%"></div>
-        </div>
-        <div style="text-align:right;margin-top:6px;font-size:11px;color:var(--green);font-family:var(--mono);">做多信号</div>
+        <div style="font-size:11px;color:var(--text-muted);text-align:right;margin-bottom:4px;font-family:var(--mono);">做多信号</div>
+        <div class="score-bar-track"><div class="score-bar-long" id="scoreLongBar" style="width:0%"></div></div>
       </div>
       <div class="score-center">
         <div class="score-label-main">信号强度</div>
-        <div class="score-verdict" id="scoreVerdict" style="color:var(--text-muted);">--</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span class="score-num-long" id="scoreLong">0</span>
+          <span class="score-slash">/</span>
+          <span class="score-num-short" id="scoreShort">0</span>
+        </div>
+        <div class="score-verdict" id="scoreVerdict">--</div>
       </div>
       <div>
-        <div class="score-bar-track">
-          <div class="score-bar-short" id="scoreBarShort" style="width:0%"></div>
-        </div>
-        <div style="margin-top:6px;font-size:11px;color:var(--red);font-family:var(--mono);">做空信号</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;font-family:var(--mono);">做空信号</div>
+        <div class="score-bar-track"><div class="score-bar-short" id="scoreShortBar" style="width:0%"></div></div>
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;margin-top:10px;">
-      <span class="score-num-long" id="scoreLong">0</span>
-      <span class="score-slash">/</span>
-      <span class="score-num-short" id="scoreShort">0</span>
-    </div>
-    <div class="signal-counts" id="signalCounts">
-      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span> 利多 <strong id="countBull">0</strong></div>
-      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span> 利空 <strong id="countBear">0</strong></div>
-      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);display:inline-block"></span> 中性 <strong id="countNeutral">0</strong></div>
+    <div class="signal-counts">
+      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;"></span> 利多 <strong id="sigBull">0</strong></div>
+      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span> 利空 <strong id="sigBear">0</strong></div>
+      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span> 中性 <strong id="sigNeutral">0</strong></div>
     </div>
   </div>
 
-  <!-- Market Sentiment — 移至综合评分下方 -->
+  <!-- ③ 市场情绪 -->
   <div class="section-label">市场情绪</div>
   <div class="grid-2">
-    <!-- Market Signal Summary -->
+    <!-- 市场信号摘要 -->
     <div class="panel">
-      <div class="panel-header" id="momentumPanel">
+      <div class="panel-header">
         <div class="panel-title">市场信号摘要</div>
+        <span class="panel-badge badge-blue" id="sentimentBadge">·</span>
       </div>
       <div class="panel-body">
-        <div class="sentiment-tags" id="sentimentTags">
-          <span style="color:var(--text-muted);font-size:12px;">加载中...</span>
-        </div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-family:var(--mono);letter-spacing:1px;">操作建议</div>
-          <div id="tradingAdvice" style="font-size:13px;line-height:1.7;color:var(--text-dim);">分析中...</div>
-        </div>
+        <div id="sentimentTags" class="sentiment-tags" style="margin-bottom:12px;"></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;font-family:var(--mono);letter-spacing:1px;">操作建议</div>
+        <div id="sentimentAdvice" style="font-size:13px;color:var(--text-dim);line-height:1.8;"></div>
       </div>
     </div>
-
-    <!-- Fear Greed Gauge -->
+    <!-- 恐惧贪婪 -->
     <div class="panel">
-      <div class="panel-header" id="trendPanel">
+      <div class="panel-header">
         <div class="panel-title">恐惧 / 贪婪指数</div>
         <span class="panel-badge badge-amber" id="fgBadge">--</span>
+        <span class="panel-badge" id="fgChangeBadge" style="margin-left:4px;">·</span>
       </div>
-      <div class="panel-body" style="padding:14px 18px;">
-
-        <!-- Arc + number row -->
-        <div class="fg-row" style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
-          <div class="fg-arc-wrap" style="flex-shrink:0;">
-            <svg width="160" height="90" viewBox="0 0 160 90">
-              <path d="M 10 80 A 70 70 0 0 1 150 80" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12" stroke-linecap="round"/>
-              <path id="fgArcPath" d="M 10 80 A 70 70 0 0 1 150 80" fill="none" stroke="var(--amber)" stroke-width="12" stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="220"/>
+      <div class="panel-body">
+        <div class="fg-row">
+          <div class="fg-arc-wrap" style="width:160px;">
+            <svg viewBox="0 0 160 90" width="160" height="90">
+              <path d="M 10 80 A 70 70 0 0 1 150 80" fill="none" stroke="var(--bg3)" stroke-width="12" stroke-linecap="round"/>
+              <path id="fgArcPath" d="M 10 80 A 70 70 0 0 1 150 80" fill="none" stroke="var(--gold)" stroke-width="12" stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="220"/>
             </svg>
+          </div>
+          <div>
             <div class="fg-number" id="fgNum">--</div>
-          </div>
-          <div style="flex:1;">
-            <div class="fg-label" id="fgText" style="color:var(--amber);font-size:15px;font-weight:700;margin-bottom:6px;">加载中...</div>
-            <div style="font-size:12px;color:var(--text-muted);line-height:1.6;" id="fgInterpret">正在获取数据...</div>
+            <div class="fg-label" id="fgValue">加载中...</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;" id="fgDesc">正在获取数据...</div>
           </div>
         </div>
-
-        <!-- Scale bar -->
-        <div style="margin-bottom:14px;">
-          <div style="height:6px;border-radius:3px;background:linear-gradient(90deg,#ff3d57,#ff9800,#ffab40,#8bc34a,#00e676);position:relative;margin-bottom:6px;">
-            <div id="fgPointer" style="position:absolute;top:-3px;width:3px;height:12px;background:#fff;border-radius:2px;box-shadow:0 0 6px rgba(255,255,255,0.6);transition:left 1s;left:50%;transform:translateX(-50%)"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);font-family:var(--mono);">
-            <span>0<br>极恐</span><span style="text-align:center">25<br>恐惧</span><span style="text-align:center">50<br>中性</span><span style="text-align:center">75<br>贪婪</span><span style="text-align:right">100<br>极贪</span>
-          </div>
+        <div class="futures-grid" style="grid-template-columns:repeat(2,1fr);margin-top:14px;gap:8px;">
+          <div class="futures-card"><div class="futures-card-label">当前指数</div><div class="futures-card-value" id="fgCurrent">--</div></div>
+          <div class="futures-card"><div class="futures-card-label">市场状态</div><div class="futures-card-value" id="fgStatus">--</div></div>
+          <div class="futures-card"><div class="futures-card-label">交易建议</div><div class="futures-card-value" id="fgAdvice" style="font-size:13px;">--</div></div>
+          <div class="futures-card"><div class="futures-card-label">信号强度</div><div class="futures-card-value" id="fgSignal">--</div></div>
         </div>
-
-        <!-- 4 stat mini cards -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;font-family:var(--mono);">当前指数</div>
-            <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="fgValue2">--</div>
-          </div>
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;font-family:var(--mono);">市场状态</div>
-            <div style="font-family:var(--mono);font-size:13px;font-weight:700;" id="fgStatus">--</div>
-          </div>
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;font-family:var(--mono);">交易建议</div>
-            <div style="font-size:12px;color:var(--text-dim);" id="fgTip">--</div>
-          </div>
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px;font-family:var(--mono);">信号强度</div>
-            <div style="display:flex;gap:3px;align-items:center;margin-top:4px;" id="fgStrengthDots"></div>
-          </div>
+        <div style="margin-top:12px;">
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;font-family:var(--mono);">近期趋势模拟</div>
+          <div style="display:flex;gap:3px;align-items:flex-end;height:32px;" id="fgHistory"></div>
         </div>
-
-        <!-- Historical simulation bar -->
-        <div>
-          <div style="font-size:10px;color:var(--text-muted);font-family:var(--mono);letter-spacing:1px;margin-bottom:6px;">近期趋势模拟</div>
-          <div style="display:flex;gap:3px;align-items:flex-end;height:32px;" id="fgHistBar"></div>
-        </div>
-
       </div>
     </div>
   </div>
 
+  <!-- ④ 量能 · 流动性 · 清算 -->
+  <div class="section-label">量能 · 流动性 · 清算</div>
+  <div class="grid-2">
+    <!-- 合约数据 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">合约核心数据</div>
+      </div>
+      <div class="panel-body">
+        <div class="futures-grid">
+          <div class="futures-card">
+            <div class="futures-card-label">资金费率</div>
+            <div class="futures-card-value" id="fundingRate">--</div>
+            <div class="futures-card-sub" id="fundingNext">--</div>
+          </div>
+          <div class="futures-card">
+            <div class="futures-card-label">持仓量</div>
+            <div class="futures-card-value" id="openInterest">--</div>
+          </div>
+          <div class="futures-card">
+            <div class="futures-card-label">多空比</div>
+            <div class="futures-card-value" id="lsRatioVal">--</div>
+          </div>
+          <div class="futures-card">
+            <div class="futures-card-label">量能判断</div>
+            <div class="futures-card-value" id="volTrend" style="font-size:14px;">--</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="ls-bar-track">
+            <div class="ls-bar-long" id="lsLong">多</div>
+            <div class="ls-bar-short" id="lsShort">空</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;font-family:var(--mono);">
+            <span id="lsLongPct">--</span><span>多空分布</span><span id="lsShortPct">--</span>
+          </div>
+        </div>
+        <!-- 量能结论 -->
+        <div id="vpaConclusion" style="margin-top:12px;font-size:13px;color:var(--text-dim);line-height:1.8;padding:12px 14px;background:var(--bg2);border-radius:var(--r-lg);"></div>
+        <div id="vpContainer" style="display:none;"></div>
+        <div id="deltaContainer" style="display:none;"></div>
+        <div id="vpaList" style="display:none;"></div>
+        <div id="buyVol5" style="display:none;"></div>
+        <div id="sellVol5" style="display:none;"></div>
+        <div id="volDelta" style="display:none;"></div>
+        <span id="vpBadge" style="display:none;"></span>
+        <span id="deltaBadge" style="display:none;"></span>
+        <span id="vpaBadge" style="display:none;"></span>
+      </div>
+    </div>
+    <!-- 流动性 & 清算 -->
+    <div class="panel">
+      <div class="panel-header" id="liqPanel">
+        <div class="panel-title">大额清算</div>
+        <span class="panel-badge badge-red" id="liqBadge">--</span>
+      </div>
+      <div class="panel-body" id="liqContent">
+        <div id="liqList"></div>
+        <div style="margin-top:12px;">
+          <div style="font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-bottom:6px;">清算热力图 <span style="color:var(--gold)">▌ 当前价</span></div>
+          <div id="heatmapContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- 订单簿 -->
+  <div class="panel">
+    <div class="panel-header" id="depthPanel">
+      <div class="panel-title">订单簿深度</div>
+      <span class="panel-badge badge-blue" id="liqDepthBadge">--</span>
+    </div>
+    <div class="panel-body" id="depthContent">
+      <div class="grid-2">
+        <div>
+          <div style="font-size:10px;color:var(--red);font-family:var(--mono);margin-bottom:6px;letter-spacing:1px;">卖单 (ASK)</div>
+          <div id="askBook"></div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:6px;letter-spacing:1px;">买单 (BID)</div>
+          <div id="bidBook"></div>
+        </div>
+      </div>
+      <div class="ob-spread" id="obSpread">-- 价差 --</div>
+    </div>
+  </div>
 
-
-
-  <!-- Indicators -->
+  <!-- ⑤ 技术指标 -->
   <div class="section-label">技术指标</div>
 
   <div class="grid-2">
-    <!-- Trend Indicators -->
     <div class="panel">
       <div class="panel-header" id="trendPanel">
         <div class="panel-title">趋势指标</div>
@@ -235,8 +267,6 @@
         <div class="indicator-list" id="trendList"></div>
       </div>
     </div>
-
-    <!-- Momentum Indicators -->
     <div class="panel">
       <div class="panel-header" id="momentumPanel">
         <div class="panel-title">动量指标</div>
@@ -249,7 +279,6 @@
   </div>
 
   <div class="grid-2">
-    <!-- Volume Indicators -->
     <div class="panel">
       <div class="panel-header" id="volumePanel">
         <div class="panel-title">成交量指标</div>
@@ -259,8 +288,6 @@
         <div class="indicator-list" id="volumeList"></div>
       </div>
     </div>
-
-    <!-- Volatility Indicators -->
     <div class="panel">
       <div class="panel-header" id="volatilityPanel">
         <div class="panel-title">波动率指标</div>
@@ -272,292 +299,88 @@
     </div>
   </div>
 
-  <!-- Supplementary Indicators -->
-  <div class="grid-2">
-    <!-- Ichimoku + ADX -->
-    <div class="panel">
-      <div class="panel-header" id="suppPanel">
-        <div class="panel-title">补充指标</div>
-        <span class="panel-badge badge-blue" id="suppBadge">--</span>
-      </div>
-      <div class="panel-body">
-        <div class="indicator-list" id="suppList"></div>
-      </div>
-    </div>
-    <!-- MA System -->
-    <div class="panel">
-      <div class="panel-header" id="maSysPanel">
-        <div class="panel-title">均线系统</div>
-        <span class="panel-badge badge-blue" id="maSysBadge">--</span>
-      </div>
-      <div class="panel-body">
-        <div class="indicator-list" id="maSysList"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Trading Systems -->
-  <div class="section-label">交易系统分析</div>
-
-  <!-- Fibonacci Panel -->
   <div class="panel">
-    <div class="panel-header" id="fibPanel">
-      <div class="panel-title">斐波那契回调位</div>
-      <span class="panel-badge badge-blue" id="fibBadge">--</span>
+    <div class="panel-header" id="suppPanel">
+      <div class="panel-title">补充指标</div>
+      <span class="panel-badge badge-blue" id="suppBadge">--</span>
     </div>
     <div class="panel-body">
-      <div id="fibBody">
-        <!-- Fib levels grid -->
-        <div id="fibLevels" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;"></div>
-        <!-- Price position bar -->
-        <div style="margin-top:4px;">
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);font-family:var(--mono);margin-bottom:6px;">
-            <span>0% (低点)</span><span id="fibCurrentLabel" style="color:var(--text)">当前位置</span><span>100% (高点)</span>
-          </div>
-          <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;position:relative;">
-            <div id="fibBar" style="position:absolute;height:100%;background:var(--amber);border-radius:3px;transition:width 1s;width:50%"></div>
-            <!-- Level markers -->
-            <div style="position:absolute;top:-2px;left:23.6%;width:1px;height:10px;background:rgba(255,255,255,0.2)"></div>
-            <div style="position:absolute;top:-2px;left:38.2%;width:1px;height:10px;background:rgba(255,255,255,0.2)"></div>
-            <div style="position:absolute;top:-2px;left:50%;width:1px;height:10px;background:rgba(255,255,255,0.3)"></div>
-            <div style="position:absolute;top:-2px;left:61.8%;width:1px;height:10px;background:rgba(255,255,255,0.2)"></div>
-            <div style="position:absolute;top:-2px;left:78.6%;width:1px;height:10px;background:rgba(255,255,255,0.2)"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-top:4px;padding:0 2px;">
-            <span style="margin-left:calc(23.6% - 10px)">23.6</span>
-            <span style="margin-left:calc(14.6% - 10px)">38.2</span>
-            <span style="margin-left:calc(11.8% - 10px)">50</span>
-            <span style="margin-left:calc(11.8% - 10px)">61.8</span>
-            <span>78.6</span>
-          </div>
-        </div>
-        <div id="fibSignal" style="margin-top:12px;padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:13px;color:var(--text-dim);line-height:1.6;"></div>
-      </div>
+      <div class="indicator-list" id="suppList"></div>
     </div>
   </div>
 
-  <!-- Vegas Tunnel + Elliott -->
+  <!-- ⑥ 交易系统 -->
+  <div class="section-label">交易系统</div>
+
+  <!-- 均线系统 -->
+  <div class="panel">
+    <div class="panel-header" id="maSysPanel">
+      <div class="panel-title">均线系统</div>
+      <span class="panel-badge badge-blue" id="maSysBadge">--</span>
+    </div>
+    <div class="panel-body">
+      <div class="indicator-list" id="maSysList"></div>
+    </div>
+  </div>
+
   <div class="grid-2">
-    <!-- Vegas Tunnel -->
+    <!-- 斐波那契 -->
+    <div class="panel">
+      <div class="panel-header" id="fibPanel">
+        <div class="panel-title">斐波那契</div>
+        <span class="panel-badge badge-amber" id="fibBadge">--</span>
+      </div>
+      <div class="panel-body" id="fibBody">
+        <div style="font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-bottom:8px;">关键支撑/压力位</div>
+        <div id="fibLevels" class="grid-2" style="gap:6px;margin-bottom:10px;"></div>
+        <div class="fib-bar-wrap">
+          <div class="fib-bar" id="fibBar" style="width:50%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-top:3px;">
+          <span>0%</span><span id="fibCurrentLabel">--</span><span>100%</span>
+        </div>
+        <div id="fibSignal" style="margin-top:10px;font-size:12px;color:var(--text-dim);line-height:1.7;"></div>
+      </div>
+    </div>
+    <!-- 维加斯通道 -->
     <div class="panel">
       <div class="panel-header" id="vegasPanel">
         <div class="panel-title">维加斯通道</div>
         <span class="panel-badge badge-blue" id="vegasBadge">--</span>
       </div>
-      <div class="panel-body" id="vegasBody">
-        <div class="indicator-list" id="vegasList"></div>
-        <div id="vegasDetail" style="margin-top:12px;padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:12px;color:var(--text-dim);line-height:1.7;"></div>
-      </div>
-    </div>
-
-    <!-- Elliott Wave -->
-    <div class="panel">
-      <div class="panel-header" id="elliottPanel">
-        <div class="panel-title">艾略特波浪</div>
-        <span class="panel-badge badge-blue" id="elliottBadge">--</span>
-      </div>
       <div class="panel-body">
-        <div id="elliottBody">
-          <div id="elliottList" class="indicator-list"></div>
-          <div id="elliottDetail" style="margin-top:12px;padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:12px;color:var(--text-dim);line-height:1.7;"></div>
-        </div>
+        <div class="indicator-list" id="vegasList"></div>
       </div>
     </div>
   </div>
 
-  <!-- Futures Data -->
-  <div class="section-label">合约数据</div>
-
+  <!-- 结构交易系统 -->
   <div class="panel">
-    <div class="panel-header" id="deltaPanel">
-      <div class="panel-title">合约市场数据</div>
+    <div class="panel-header" id="structurePanel">
+      <div class="panel-title">结构交易系统</div>
+      <span class="panel-badge badge-blue" id="structureBadge">--</span>
     </div>
     <div class="panel-body">
-      <div class="futures-grid">
-        <!-- Funding Rate -->
-        <div class="futures-card">
-          <div class="futures-card-label">资金费率</div>
-          <div class="futures-card-value" id="fundingRate">--</div>
-          <div class="futures-card-sub" id="fundingNote">每8小时结算</div>
-        </div>
-        <!-- Open Interest -->
-        <div class="futures-card">
-          <div class="futures-card-label">持仓量</div>
-          <div class="futures-card-value" id="openInterest">--</div>
-          <div class="futures-card-sub" id="oiNote">--</div>
-        </div>
-        <!-- Long/Short Ratio -->
-        <div class="futures-card">
-          <div class="futures-card-label">多空比</div>
-          <div class="futures-card-value" id="lsRatioVal">--</div>
-          <div class="futures-card-sub" id="lsNote">大户持仓比</div>
-        </div>
-        <!-- Fear & Greed -->
-        <div class="futures-card">
-          <div class="futures-card-label">恐惧贪婪指数</div>
-          <div class="futures-card-value" id="fgValue">--</div>
-          <div class="futures-card-sub" id="fgNote">--</div>
-        </div>
-      </div>
-
-      <!-- LS Ratio Bar -->
-      <div style="margin-top:16px;">
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-family:var(--mono);letter-spacing:1px;">多空持仓分布</div>
-        <div class="ls-bar-track">
-          <div class="ls-bar-long" id="lsBarLong" style="width:50%">多</div>
-          <div class="ls-bar-short" id="lsBarShort">空</div>
-        </div>
-        <div class="ls-labels" style="margin-top:6px;">
-          <span class="ls-label">多头 <strong id="lsLong" style="color:var(--green)">--</strong></span>
-          <span class="ls-label">空头 <strong id="lsShort" style="color:var(--red)">--</strong></span>
-        </div>
-      </div>
+      <div class="indicator-list" id="structureList"></div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════ -->
-  <!-- LIQUIDATION & LIQUIDITY                    -->
-  <!-- ══════════════════════════════════════════ -->
-  <div class="section-label">清算 · 流动性分析</div>
-
-  <div class="grid-2">
-    <!-- Liquidation Intensity -->
-    <div class="panel">
-      <div class="panel-header" id="vpaPanel">
-        <div class="panel-title">清算强度</div>
-        <span class="panel-badge badge-blue" id="liqBadge">加载中...</span>
-      </div>
-      <div class="panel-body" id="liqContent">
-        <div class="stat-grid-4" id="liqStats">
-          <div class="stat-mini"><div class="stat-mini-label">多头清算</div><div class="stat-mini-value trend-down" id="liqLong">--</div><div class="stat-mini-sub">近1小时</div></div>
-          <div class="stat-mini"><div class="stat-mini-label">空头清算</div><div class="stat-mini-value trend-up" id="liqShort">--</div><div class="stat-mini-sub">近1小时</div></div>
-          <div class="stat-mini"><div class="stat-mini-label">清算总量</div><div class="stat-mini-value" id="liqTotal" style="color:var(--amber)">--</div><div class="stat-mini-sub">USD</div></div>
-          <div class="stat-mini"><div class="stat-mini-label">清算强度</div><div class="stat-mini-value" id="liqIntensity">--</div><div class="stat-mini-sub" id="liqLevel">--</div></div>
-        </div>
-        <div style="margin-bottom:10px;">
-          <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);letter-spacing:1px;margin-bottom:8px;">多空清算比例</div>
-          <div style="display:flex;height:20px;border-radius:10px;overflow:hidden;gap:2px;">
-            <div id="liqLongBar" style="background:rgba(255,61,87,0.6);transition:width 0.8s;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--mono);color:rgba(255,255,255,0.8);width:50%">多清</div>
-            <div id="liqShortBar" style="background:rgba(0,230,118,0.6);flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--mono);color:rgba(0,0,0,0.7);">空清</div>
-          </div>
-        </div>
-        <div id="liqSignal" style="padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:12px;color:var(--text-dim);line-height:1.7;"></div>
-      </div>
-    </div>
-
-    <!-- Liquidation Heatmap -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">清算热力图</div>
-        <span class="panel-badge badge-amber" id="heatBadge">价格区间</span>
-      </div>
-      <div class="panel-body">
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;font-family:var(--mono);">基于ATR预估清算密度分布 <span style="color:var(--amber)">▌ 当前价</span></div>
-        <div id="heatmapContainer"></div>
-        <div style="margin-top:10px;display:flex;gap:12px;font-size:11px;">
-          <span style="color:var(--text-muted);">热度：</span>
-          <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:rgba(255,61,87,0.8);border-radius:2px;display:inline-block"></span>多头密集</span>
-          <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:rgba(0,230,118,0.8);border-radius:2px;display:inline-block"></span>空头密集</span>
-          <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:rgba(255,171,64,0.8);border-radius:2px;display:inline-block"></span>混合密集</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Liquidity Analysis -->
+  <!-- 艾略特波浪 -->
   <div class="panel">
-    <div class="panel-header">
-      <div class="panel-title">流动性分析 · 订单簿深度</div>
-      <span class="panel-badge badge-blue" id="liqDepthBadge">--</span>
+    <div class="panel-header" id="elliottPanel">
+      <div class="panel-title">艾略特波浪</div>
+      <span class="panel-badge badge-purple" id="elliottBadge">--</span>
     </div>
-    <div class="panel-body" id="depthContent">
-      <div class="grid-2">
-        <!-- Order Book -->
-        <div>
-          <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);letter-spacing:1px;margin-bottom:10px;">实时订单簿 TOP 8</div>
-          <div id="askBook"></div>
-          <div class="ob-spread"><span style="color:var(--text-muted)">价差</span><span id="obSpread">--</span><span style="color:var(--text-muted)">买卖墙</span><span id="obWall">--</span></div>
-          <div id="bidBook"></div>
-        </div>
-        <!-- Liquidity Metrics -->
-        <div>
-          <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);letter-spacing:1px;margin-bottom:10px;">流动性指标</div>
-          <div class="stat-grid-4" style="grid-template-columns:1fr 1fr;margin-bottom:12px;">
-            <div class="stat-mini"><div class="stat-mini-label">买盘深度(2%)</div><div class="stat-mini-value trend-up" id="bidDepth2">--</div><div class="stat-mini-sub">USD</div></div>
-            <div class="stat-mini"><div class="stat-mini-label">卖盘深度(2%)</div><div class="stat-mini-value trend-down" id="askDepth2">--</div><div class="stat-mini-sub">USD</div></div>
-            <div class="stat-mini"><div class="stat-mini-label">买卖深度比</div><div class="stat-mini-value" id="depthRatio">--</div><div class="stat-mini-sub" id="depthRatioNote">--</div></div>
-            <div class="stat-mini"><div class="stat-mini-label">最大买单</div><div class="stat-mini-value" id="maxBid">--</div><div class="stat-mini-sub" id="maxBidPrice">--</div></div>
-          </div>
-          <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);letter-spacing:1px;margin-bottom:8px;">流动性信号</div>
-          <div id="liquiditySignal" style="padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:12px;color:var(--text-dim);line-height:1.7;"></div>
-        </div>
-      </div>
+    <div class="panel-body" id="elliottBody">
+      <div id="elliottContent"></div>
     </div>
   </div>
 
-  <!-- 量能分析 - 简化版 -->
-  <div class="section-label">量能分析</div>
-
-  <div class="panel">
-    <div class="panel-header" id="vpaPanel">
-      <div class="panel-title">量能综合判断</div>
-      <span class="panel-badge badge-blue" id="vpaBadge">--</span>
-    </div>
-    <div class="panel-body" id="vpaContent">
-      <!-- 结论卡片 -->
-      <div id="vpaConclusion" style="font-size:14px;color:var(--text-dim);line-height:1.9;padding:14px 16px;background:var(--bg2);border-radius:var(--r-lg);margin-bottom:14px;"></div>
-      <!-- 关键数据 - 4个核心指标 -->
-      <div class="futures-grid">
-        <div class="futures-card">
-          <div class="futures-card-label">量能趋势</div>
-          <div class="futures-card-value" id="volTrend">--</div>
-        </div>
-        <div class="futures-card">
-          <div class="futures-card-label">买卖Delta</div>
-          <div class="futures-card-value" id="volDelta">--</div>
-        </div>
-        <div class="futures-card">
-          <div class="futures-card-label">POC价格</div>
-          <div class="futures-card-value" id="vpBadge" style="font-size:13px;">--</div>
-        </div>
-        <div class="futures-card">
-          <div class="futures-card-label">量价信号</div>
-          <div class="futures-card-value" id="deltaBadge">--</div>
-        </div>
-      </div>
-      <!-- 隐藏的原有容器，保持JS兼容 -->
-      <div id="vpContainer" style="display:none;"></div>
-      <div id="deltaContainer" style="display:none;"></div>
-      <div id="vpaList" style="display:none;"></div>
-      <div id="buyVol5" style="display:none;"></div>
-      <div id="sellVol5" style="display:none;"></div>
-    </div>
-  </div>
-
-  <div style="height:40px;display:flex;align-items:center;justify-content:center;">
-    <span style="font-size:11px;color:var(--text-muted);font-family:var(--mono);">数据来源：BINANCE API · COINGECKO API · 仅供参考，不构成投资建议</span>
+  <div style="height:20px;display:flex;align-items:center;justify-content:center;">
+    <span style="font-size:10px;color:var(--text-muted);font-family:var(--mono);">数据来源：BINANCE API · COINGECKO · 仅供参考，不构成投资建议</span>
   </div>
 
 </div><!-- /main -->
-
-<!-- ══ BRIEF MODAL ══ -->
-<div id="briefModal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);padding:10px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-  <div style="max-width:700px;margin:0 auto;background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg2);">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:16px;">📋</span>
-        <span style="font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:2px;color:var(--text);">市场简报</span>
-        <span id="briefTimestamp" style="font-family:var(--mono);font-size:10px;color:var(--text-muted);"></span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button onclick="copyBrief()" style="padding:5px 12px;border-radius:4px;background:var(--bg3);border:1px solid var(--border2);color:var(--text-muted);font-family:var(--mono);font-size:10px;cursor:pointer;" id="copyBriefBtn">复制全文</button>
-        <button onclick="closeBrief()" style="padding:5px 12px;border-radius:4px;background:var(--bg3);border:1px solid var(--border2);color:var(--text-muted);font-family:var(--mono);font-size:10px;cursor:pointer;">✕ 关闭</button>
-      </div>
-    </div>
-    <div id="briefContent" style="padding:20px 24px;max-height:70vh;overflow-y:auto;"></div>
-  </div>
-</div>
-
 </div><!-- /pageAnalysis -->
 
 <!-- ══════════════════════════════════════════════

@@ -28,15 +28,25 @@ let _liveLoading = false;
 
 // 指标名称映射
 const nameMap = {
+  // 趋势系统
   macd: 'MACD', ema: 'EMA 均线', ema200: 'EMA200',
-  boll: '布林带', rsi: 'RSI', kdj: 'KDJ',
-  stochrsi: 'Stoch RSI', williamsr: 'Williams %R', cci: 'CCI',
+  gmma: '顾比复合均线', sar: '抛物线 SAR', aroon: 'Aroon 指标',
+  ichimoku: '一目均衡表', adx: 'ADX 趋势强度',
+  ma510: 'MA5/MA10', ma2060: 'MA20/MA60', ma60120: 'MA60/MA120',
+  maArrange: '均线排列', ma120: 'MA120',
+  vegasTrend: '维加斯通道', vegasEma12: 'EMA12',
+  td: 'TD 序列',
+  // 动量系统
+  rsi: 'RSI', kdj: 'KDJ', stochrsi: 'Stoch RSI',
+  williamsr: 'Williams %R', cci: 'CCI', mfi: 'MFI', roc: 'ROC',
+  // 波动率系统
+  boll: '布林带', bw: '带宽', atr: 'ATR', keltner: '肯特纳通道',
+  // 成交量系统
   obv: 'OBV', volume: '成交量', cmf: 'CMF', vwap: 'VWAP',
-  atr: 'ATR', bw: '带宽', donchian: '唐奇安通道',
-  ichimoku: '一目均衡表', adx: 'ADX 趋势强度', mfi: 'MFI 资金流量', roc: 'ROC 变动率',
-  ma510: 'MA5 / MA10', ma2060: 'MA20 / MA60', ma60120: 'MA60 / MA120',
-  maArrange: '均线排列', ma120: 'MA120 长期',
-  vegasTrend: '维加斯通道', vegasEma12: 'EMA12 位置',
+  // 结构系统
+  pa: '价格行为 PA', wyckoff: '威科夫理论',
+  donchian: '唐奇安通道', avwap: '锚定 VWAP',
+  // 补充
 };
 
 const nameMapVpa = {

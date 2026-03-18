@@ -74,6 +74,7 @@ async function loadAll(silent=false) {
     renderGroup('volatilityList', 'volatilityBadge', indicators, 'volatility', nameMap);
     renderGroup('suppList', 'suppBadge', indicators, 'supp', nameMap);
     renderGroup('maSysList', 'maSysBadge', indicators, 'masys', nameMap);
+    renderGroup('structureList', 'structureBadge', indicators, 'structure', nameMap);
 
     // Trading systems
     renderFibonacci(fib);

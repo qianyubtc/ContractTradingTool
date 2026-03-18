@@ -664,3 +664,223 @@ function analyzeAll(klines) {
   return { indicators, closes, highs, lows, volumes, price, ema20, ema50, ema200, fib: calcFibonacci(highs, lows, closes), vegas, elliott, m5, m10, m20, m60, m120 };
 }
 
+
+// ── 新增交易系统指标 ──────────────────────────────────────────────────────────
+
+// 抛物线SAR
+function calcParabolicSAR(highs, lows, step=0.02, max=0.2) {
+  const n = highs.length;
+  const sar = new Array(n).fill(0);
+  let bull = true;
+  let af = step;
+  let ep = lows[0];
+  sar[0] = highs[0];
+
+  for (let i = 1; i < n; i++) {
+    const prevSar = sar[i-1];
+    if (bull) {
+      sar[i] = prevSar + af * (ep - prevSar);
+      sar[i] = Math.min(sar[i], lows[i-1], i >= 2 ? lows[i-2] : lows[i-1]);
+      if (lows[i] < sar[i]) {
+        bull = false; af = step; ep = lows[i]; sar[i] = ep;
+      } else {
+        if (highs[i] > ep) { ep = highs[i]; af = Math.min(af + step, max); }
+      }
+    } else {
+      sar[i] = prevSar + af * (ep - prevSar);
+      sar[i] = Math.max(sar[i], highs[i-1], i >= 2 ? highs[i-2] : highs[i-1]);
+      if (highs[i] > sar[i]) {
+        bull = true; af = step; ep = highs[i]; sar[i] = ep;
+      } else {
+        if (lows[i] < ep) { ep = lows[i]; af = Math.min(af + step, max); }
+      }
+    }
+  }
+  return { sar, bull };
+}
+
+// Aroon 指标
+function calcAroon(highs, lows, period=25) {
+  const n = highs.length;
+  const aroonUp = new Array(n).fill(null);
+  const aroonDown = new Array(n).fill(null);
+  for (let i = period; i < n; i++) {
+    const sliceH = highs.slice(i - period, i + 1);
+    const sliceL = lows.slice(i - period, i + 1);
+    const highIdx = sliceH.indexOf(Math.max(...sliceH));
+    const lowIdx  = sliceL.indexOf(Math.min(...sliceL));
+    aroonUp[i]   = ((highIdx) / period) * 100;
+    aroonDown[i] = ((lowIdx)  / period) * 100;
+  }
+  return { aroonUp, aroonDown };
+}
+
+// 肯特纳通道
+function calcKeltner(highs, lows, closes, emaPeriod=20, atrPeriod=10, mult=2) {
+  const ema = calcEMA(closes, emaPeriod);
+  const atr = calcATR(highs, lows, closes, atrPeriod);
+  return closes.map((_, i) => ({
+    upper: ema[i] != null && atr[i] != null ? ema[i] + mult * atr[i] : null,
+    mid:   ema[i],
+    lower: ema[i] != null && atr[i] != null ? ema[i] - mult * atr[i] : null,
+  }));
+}
+
+// 顾比复合均线 GMMA
+function calcGMMA(closes) {
+  // 短期：3,5,8,10,12,15
+  // 长期：30,35,40,45,50,60
+  const short = [3,5,8,10,12,15].map(p => calcEMA(closes, p));
+  const long  = [30,35,40,45,50,60].map(p => calcEMA(closes, p));
+  const last = closes.length - 1;
+  const shortVals = short.map(e => e[last]).filter(v => v != null);
+  const longVals  = long.map(e => e[last]).filter(v => v != null);
+  const shortAvg = shortVals.reduce((a,b)=>a+b,0) / shortVals.length;
+  const longAvg  = longVals.reduce((a,b)=>a+b,0)  / longVals.length;
+  const shortSpread = (Math.max(...shortVals) - Math.min(...shortVals)) / shortAvg * 100;
+  const longSpread  = (Math.max(...longVals)  - Math.min(...longVals))  / longAvg  * 100;
+  return { shortAvg, longAvg, shortSpread, longSpread, shortVals, longVals };
+}
+
+// TD Sequential 计数
+function calcTDSequential(closes) {
+  const n = closes.length;
+  const setup = new Array(n).fill(0);
+  let count = 0;
+  for (let i = 4; i < n; i++) {
+    if (closes[i] < closes[i-4]) {
+      count = count > 0 ? count + 1 : 1;
+    } else if (closes[i] > closes[i-4]) {
+      count = count < 0 ? count - 1 : -1;
+    } else {
+      count = 0;
+    }
+    setup[i] = Math.abs(count) <= 9 ? count : (count > 0 ? 9 : -9);
+  }
+  const last = setup[n-1];
+  const prev = setup[n-2];
+  return { setup, lastCount: last, isExhausted: Math.abs(last) >= 9 };
+}
+
+// 价格行为 - BOS/MSS/FVG 检测
+function calcPriceAction(highs, lows, closes) {
+  const n = closes.length;
+  const last = n - 1;
+
+  // 找最近的摆动高点和低点
+  let swingHighs = [], swingLows = [];
+  for (let i = 2; i < n - 2; i++) {
+    if (highs[i] > highs[i-1] && highs[i] > highs[i-2] && highs[i] > highs[i+1] && highs[i] > highs[i+2]) {
+      swingHighs.push({ idx: i, price: highs[i] });
+    }
+    if (lows[i] < lows[i-1] && lows[i] < lows[i-2] && lows[i] < lows[i+1] && lows[i] < lows[i+2]) {
+      swingLows.push({ idx: i, price: lows[i] });
+    }
+  }
+
+  // 最近的摆动点
+  const lastSwingHigh = swingHighs[swingHighs.length - 1];
+  const lastSwingLow  = swingLows[swingLows.length - 1];
+  const price = closes[last];
+
+  // BOS 检测 (突破结构)
+  let bos = null;
+  if (lastSwingHigh && price > lastSwingHigh.price) bos = 'bull';
+  if (lastSwingLow  && price < lastSwingLow.price)  bos = 'bear';
+
+  // FVG 检测 (公平价值缺口)
+  let fvg = null;
+  if (last >= 2) {
+    const gap = lows[last] - highs[last-2];
+    const gapDown = highs[last] - lows[last-2];  // 修정
+    if (gap > 0) fvg = { type: 'bull', size: gap, price: (lows[last] + highs[last-2]) / 2 };
+    else if (lows[last-2] - highs[last] > 0) fvg = { type: 'bear', size: lows[last-2] - highs[last], price: (lows[last-2] + highs[last]) / 2 };
+  }
+
+  // 订单块 OB 检测
+  let ob = null;
+  for (let i = last - 1; i >= Math.max(0, last - 10); i--) {
+    if (closes[i] < closes[i-1] && closes[last] > highs[i]) {
+      ob = { type: 'bull', price: lows[i], high: highs[i] };
+      break;
+    }
+    if (closes[i] > closes[i-1] && closes[last] < lows[i]) {
+      ob = { type: 'bear', price: highs[i], low: lows[i] };
+      break;
+    }
+  }
+
+  return { bos, fvg, ob, lastSwingHigh, lastSwingLow };
+}
+
+// 威科夫阶段识别
+function calcWyckoff(closes, volumes, highs, lows) {
+  const n = closes.length;
+  const last = n - 1;
+  const lookback = Math.min(50, n - 1);
+
+  const recentCloses  = closes.slice(last - lookback);
+  const recentVols    = volumes.slice(last - lookback);
+  const recentHighs   = highs.slice(last - lookback);
+  const recentLows    = lows.slice(last - lookback);
+
+  const priceRange = Math.max(...recentHighs) - Math.min(...recentLows);
+  const pricePos   = (closes[last] - Math.min(...recentLows)) / priceRange;
+  const avgVol     = recentVols.reduce((a,b)=>a+b,0) / recentVols.length;
+  const recentVol  = volumes.slice(last-5).reduce((a,b)=>a+b,0) / 5;
+  const volRatio   = recentVol / avgVol;
+
+  const priceChange10 = (closes[last] - closes[last-10]) / closes[last-10] * 100;
+  const priceChange30 = (closes[last] - closes[Math.max(0,last-30)]) / closes[Math.max(0,last-30)] * 100;
+
+  let phase = 'unknown', desc = '', type = 'neutral';
+
+  if (pricePos < 0.25 && volRatio > 1.2 && priceChange10 > -3) {
+    phase = 'Accumulation'; desc = '吸筹阶段：价格处于低位区，成交量放大，主力可能在建仓'; type = 'bull';
+  } else if (pricePos < 0.35 && priceChange10 > 2 && volRatio > 1.0) {
+    phase = 'Markup'; desc = '拉升阶段：价格从低位启动，成交量配合，上涨趋势形成中'; type = 'bull';
+  } else if (pricePos > 0.75 && volRatio > 1.3 && priceChange10 < 3) {
+    phase = 'Distribution'; desc = '派发阶段：价格处于高位区，成交量异常，主力可能在出货'; type = 'bear';
+  } else if (pricePos > 0.65 && priceChange10 < -2 && volRatio > 1.0) {
+    phase = 'Markdown'; desc = '下跌阶段：价格从高位回落，下跌趋势确立中'; type = 'bear';
+  } else {
+    phase = 'Ranging'; desc = '震荡阶段：价格在区间内波动，方向不明朗，等待突破信号'; type = 'neutral';
+  }
+
+  return { phase, desc, type, pricePos, volRatio };
+}
+
+// 唐奇安通道
+function calcDonchian(highs, lows, period=20) {
+  const n = highs.length;
+  return highs.map((_, i) => {
+    if (i < period - 1) return { upper: null, lower: null, mid: null };
+    const sliceH = highs.slice(i - period + 1, i + 1);
+    const sliceL = lows.slice(i - period + 1, i + 1);
+    const upper = Math.max(...sliceH);
+    const lower = Math.min(...sliceL);
+    return { upper, lower, mid: (upper + lower) / 2 };
+  });
+}
+
+// 锚定VWAP (从近期低点/高点锚定)
+function calcAnchoredVWAP(highs, lows, closes, volumes) {
+  const n = closes.length;
+  const lookback = Math.min(50, n);
+  // 找近期最低点作为锚点
+  let anchorIdx = n - lookback;
+  let minLow = lows[anchorIdx];
+  for (let i = anchorIdx; i < n; i++) {
+    if (lows[i] < minLow) { minLow = lows[i]; anchorIdx = i; }
+  }
+  // 从锚点计算VWAP
+  let cumTP = 0, cumVol = 0;
+  const avwap = new Array(n).fill(null);
+  for (let i = anchorIdx; i < n; i++) {
+    const tp = (highs[i] + lows[i] + closes[i]) / 3;
+    cumTP  += tp * volumes[i];
+    cumVol += volumes[i];
+    avwap[i] = cumVol > 0 ? cumTP / cumVol : null;
+  }
+  return { avwap, anchorIdx, anchorPrice: lows[anchorIdx] };
+}
