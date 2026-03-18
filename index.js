@@ -23,6 +23,7 @@ app.use('/api', require('./routes/futures'));
 app.use('/api', require('./routes/sentiment'));
 app.use('/api', require('./routes/news'));
 app.use('/api', require('./routes/proxy'));
+app.use('/api', require('./routes/live'));
 app.use('/api', require('./routes/news'));
 
 app.get('/ping', (req, res) => res.json({ ok: true, t: Date.now() }));
