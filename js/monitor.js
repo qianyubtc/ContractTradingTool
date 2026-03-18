@@ -33,7 +33,7 @@ async function loadMonitor(force = false) {
 // ── 价格异动 ──────────────────────────────────────────────────────────────────
 async function monLoadPriceAlerts() {
   try {
-    const r = await fetch(`${BINANCE_F}/fapi/v1/ticker/24hr`);
+    const r = await fetch(`${API}/api/proxy?u=${encodeURIComponent(BINANCE_F + '/fapi/v1/ticker/24hr')}`);
     const data = await r.json();
 
     // 过滤 USDT 永续合约，排除小币种
@@ -101,8 +101,6 @@ function monRenderPriceList() {
 // ── 资金费率排行 ──────────────────────────────────────────────────────────────
 async function monLoadFundingRate() {
   try {
-    const r = await fetch(`${BINANCE_F}/fapi/v1/fundingRate?limit=1`);
-    // 获取所有合约费率
     const r2 = await fetch(`${API}/api/proxy?u=${encodeURIComponent(BINANCE_F + '/fapi/v1/premiumIndex')}`);
     const data = await r2.json();
 
@@ -144,7 +142,7 @@ async function monLoadLiquidation() {
   try {
     const symbols = ['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','ADAUSDT','AVAXUSDT','LINKUSDT','DOTUSDT'];
     const results = await Promise.allSettled(
-      symbols.map(s => fetch(`${BINANCE_F}/fapi/v1/forceOrders?symbol=${s}&limit=10`).then(r=>r.json()))
+      symbols.map(s => fetch(`${API}/api/proxy?u=${encodeURIComponent(BINANCE_F + '/fapi/v1/forceOrders?symbol=' + s + '&limit=10')}`).then(r=>r.json()))
     );
 
     const orders = [];
@@ -191,8 +189,6 @@ async function monLoadLiquidation() {
 // ── 持仓量异动 ────────────────────────────────────────────────────────────────
 async function monLoadOI() {
   try {
-    const r = await fetch(`${API}/api/proxy?u=${encodeURIComponent(BINANCE_F + '/fapi/v1/openInterest?symbol=BTCUSDT')}`);
-
     const symbols = ['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','ADAUSDT','AVAXUSDT','LINKUSDT','DOTUSDT','MATICUSDT','LTCUSDT'];
     const results = await Promise.allSettled(
       symbols.map(s =>
