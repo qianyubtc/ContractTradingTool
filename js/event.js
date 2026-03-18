@@ -589,3 +589,11 @@ window.addEventListener('DOMContentLoaded', () => {
   if (amtInput) amtInput.addEventListener('input', evUpdateAmountDisplay);
   evUpdateAmountDisplay();
 });
+
+// ── 刷新建议 ──────────────────────────────────────────────────────────────────
+async function evRefreshSuggestion() {
+  const btn = document.getElementById('evRefreshBtn');
+  if (btn) { btn.textContent = '⟳ 分析中...'; btn.disabled = true; }
+  await evLoadMarketData(true);
+  if (btn) { btn.textContent = '⟳ 刷新分析'; btn.disabled = false; }
+}
