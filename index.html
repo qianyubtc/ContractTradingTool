@@ -82,7 +82,16 @@
       <div class="stat-item"><div class="stat-label">24H VOL</div><div class="stat-value" id="stat24v">--</div></div>
       <div class="stat-item"><div class="stat-label">MKT CAP</div><div class="stat-value" id="statMC">--</div></div>
     </div>
-    <canvas class="mini-chart" id="miniChart" width="180" height="52"></canvas>
+    <svg class="mini-chart" id="miniChart" viewBox="0 0 180 52" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="var(--green)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <polygon id="miniChartFill" points="" fill="url(#chartGrad)"/>
+      <polyline id="miniChartLine" points="" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
   </div>
 
   <!-- ② 综合评分 -->
@@ -95,7 +104,7 @@
     <div class="score-meter-wrap">
       <div>
         <div style="font-size:11px;color:var(--text-muted);text-align:right;margin-bottom:4px;font-family:var(--mono);">做多信号</div>
-        <div class="score-bar-track"><div class="score-bar-long" id="scoreLongBar" style="width:0%"></div></div>
+        <div class="score-bar-track"><div class="score-bar-long" id="scoreBarLong" style="width:0%"></div></div>
       </div>
       <div class="score-center">
         <div class="score-label-main">信号强度</div>
@@ -108,13 +117,13 @@
       </div>
       <div>
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;font-family:var(--mono);">做空信号</div>
-        <div class="score-bar-track"><div class="score-bar-short" id="scoreShortBar" style="width:0%"></div></div>
+        <div class="score-bar-track"><div class="score-bar-short" id="scoreBarShort" style="width:0%"></div></div>
       </div>
     </div>
     <div class="signal-counts">
-      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;"></span> 利多 <strong id="sigBull">0</strong></div>
-      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span> 利空 <strong id="sigBear">0</strong></div>
-      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span> 中性 <strong id="sigNeutral">0</strong></div>
+      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;"></span> 利多 <strong id="countBull">0</strong></div>
+      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span> 利空 <strong id="countBear">0</strong></div>
+      <div class="signal-count-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span> 中性 <strong id="countNeutral">0</strong></div>
     </div>
   </div>
 
@@ -130,7 +139,7 @@
       <div class="panel-body">
         <div id="sentimentTags" class="sentiment-tags" style="margin-bottom:12px;"></div>
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;font-family:var(--mono);letter-spacing:1px;">操作建议</div>
-        <div id="sentimentAdvice" style="font-size:13px;color:var(--text-dim);line-height:1.8;"></div>
+        <div id="tradingAdvice" style="font-size:13px;color:var(--text-dim);line-height:1.8;"></div>
       </div>
     </div>
     <!-- 恐惧贪婪 -->
@@ -202,7 +211,7 @@
             <div class="ls-bar-short" id="lsShort">空</div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;font-family:var(--mono);">
-            <span id="lsLongPct">--</span><span>多空分布</span><span id="lsShortPct">--</span>
+            <span id="lsLongPctLabel">--</span><span>多空分布</span><span id="lsShortPctLabel">--</span>
           </div>
         </div>
         <!-- 量能结论 -->
@@ -489,13 +498,6 @@
   <div id="vegasDetail"></div>
   <div id="elliottList"></div>
   <div id="elliottDetail"></div>
-  <div id="scoreBarLong"></div>
-  <div id="scoreBarShort"></div>
-  <div id="countBull"></div>
-  <div id="countBear"></div>
-  <div id="countNeutral"></div>
-  <div id="miniChartLine"></div>
-  <div id="miniChartFill"></div>
   <div id="fgText"></div>
   <div id="fgNote"></div>
   <div id="fgPointer"></div>
@@ -505,7 +507,6 @@
   <div id="fgStrengthDots"></div>
   <div id="fgHistBar"></div>
   <div id="lsBarLong"></div>
-  <div id="tradingAdvice"></div>
   <div id="liqLong"></div>
   <div id="liqShort"></div>
   <div id="liqTotal"></div>
