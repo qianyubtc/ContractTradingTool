@@ -769,9 +769,11 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   .main { padding:12px 12px calc(72px + env(safe-area-inset-bottom,0px)) 12px; gap:12px; }
 
   /* price */
-  .price-hero { grid-template-columns:1fr; gap:14px; padding:16px 18px; border-radius:var(--r-lg); }
-  .price-value { font-size:30px; }
-  .price-stats { gap:18px; }
+  .price-hero { grid-template-columns:1fr; gap:10px; padding:14px 16px; border-radius:var(--r-lg); }
+  .price-value { font-size:26px; letter-spacing:-1px; }
+  .price-stats { gap:10px; flex-wrap:wrap; }
+  .stat-label  { font-size:9px; }
+  .stat-value  { font-size:12px; }
 
   /* score */
   .score-section    { padding:14px 16px; border-radius:var(--r-lg); }

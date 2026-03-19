@@ -12,7 +12,7 @@
       <div class="stat-item"><div class="stat-label">24H HIGH</div><div class="stat-value" id="stat24h">--</div></div>
       <div class="stat-item"><div class="stat-label">24H LOW</div><div class="stat-value" id="stat24l">--</div></div>
       <div class="stat-item"><div class="stat-label">24H VOL</div><div class="stat-value" id="stat24v">--</div></div>
-      <div class="stat-item"><div class="stat-label">MKT CAP</div><div class="stat-value" id="statMC">--</div></div>
+      <div class="stat-item" style="display:none;"><div class="stat-label">MKT CAP</div><div class="stat-value" id="statMC">--</div></div>
     </div>
     <svg class="mini-chart" id="miniChart" viewBox="0 0 180 52" preserveAspectRatio="none">
       <defs>
@@ -89,6 +89,7 @@
               <path d="M 12 88 A 72 72 0 0 1 148 88" fill="none" stroke="var(--bg3)" stroke-width="14" stroke-linecap="round"/>
               <path id="fgArcPath" d="M 12 88 A 72 72 0 0 1 148 88" fill="none" stroke="var(--gold)" stroke-width="14" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="226"/>
             </svg>
+            <!-- 数字居中在弧形内 -->
             <div style="position:absolute;bottom:2px;left:0;right:0;text-align:center;">
               <div style="font-family:var(--mono);font-size:32px;font-weight:700;line-height:1;" id="fgNum">--</div>
             </div>

@@ -40,13 +40,18 @@ async function monLoadPriceAlerts() {
 
     if (!Array.isArray(rawData)) throw new Error('invalid ticker data');
 
-    // 过滤：USDT永续合约，成交量>500万USDT，排除非主流后缀
+    // 过滤：USDT永续合约，成交量>2000万USDT，排除已下线/低流动性币种
     _monAllTickers = rawData
       .filter(t => {
         if (!t.symbol.endsWith('USDT')) return false;
         if (t.symbol.includes('_')) return false; // 排除交割合约
         const vol = parseFloat(t.quoteVolume);
-        return vol > 5000000; // 成交量>500万USDT
+        const price = parseFloat(t.lastPrice);
+        if (vol < 20000000) return false; // 成交量>2000万USDT
+        if (price <= 0) return false;     // 排除价格异常
+        const count = parseInt(t.count || 0);
+        if (count < 1000) return false;   // 排除成交笔数过少（已下线）
+        return true;
       })
       .map(t => ({
         symbol: t.symbol.replace('USDT', ''),
