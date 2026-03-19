@@ -3,14 +3,32 @@
 let _monTimer = null;
 let _monPriceMode = 'up';
 let _monAllTickers = [];
+let _validFuturesSymbols = null; // 币安官方 USDT 永续合约白名单
+
+async function monGetValidSymbols() {
+  if (_validFuturesSymbols) return _validFuturesSymbols;
+  try {
+    const r = await fetch(`${API}/api/proxy?u=${encodeURIComponent(BINANCE_F + '/fapi/v1/exchangeInfo')}`);
+    const data = await r.json();
+    _validFuturesSymbols = new Set(
+      (data.symbols || [])
+        .filter(s => s.status === 'TRADING' && s.contractType === 'PERPETUAL' && s.quoteAsset === 'USDT')
+        .map(s => s.symbol)
+    );
+  } catch(e) {
+    _validFuturesSymbols = null;
+  }
+  return _validFuturesSymbols;
+}
 
 // ── 初始化 ────────────────────────────────────────────────────────────────────
 async function loadMonitor(force = false) {
   const lastUpdate = document.getElementById('monLastUpdate');
   if (lastUpdate) lastUpdate.textContent = '加载中...';
 
-  // 并行加载所有数据
+  // 先获取官方合约白名单，再并行加载
   try {
+    await monGetValidSymbols();
     await Promise.allSettled([
       monLoadPriceAlerts(),
       monLoadFundingRate(),
@@ -40,11 +58,12 @@ async function monLoadPriceAlerts() {
 
     if (!Array.isArray(rawData)) throw new Error('invalid ticker data');
 
-    // 过滤：USDT永续合约，成交量>2000万USDT，排除已下线/低流动性币种
+    // 过滤：只保留官方 TRADING 状态的 USDT 永续合约，同时过滤低流动性
     _monAllTickers = rawData
       .filter(t => {
         if (!t.symbol.endsWith('USDT')) return false;
         if (t.symbol.includes('_')) return false; // 排除交割合约
+        if (_validFuturesSymbols && !_validFuturesSymbols.has(t.symbol)) return false; // 不在官方白名单
         const vol = parseFloat(t.quoteVolume);
         const price = parseFloat(t.lastPrice);
         if (vol < 20000000) return false; // 成交量>2000万USDT
@@ -120,7 +139,11 @@ async function monLoadFundingRate() {
     const data = await r2.json();
 
     const rates = data
-      .filter(d => d.symbol.endsWith('USDT'))
+      .filter(d =>
+        d.symbol.endsWith('USDT') &&
+        !d.symbol.includes('_') &&
+        (!_validFuturesSymbols || _validFuturesSymbols.has(d.symbol))
+      )
       .map(d => ({
         symbol: d.symbol.replace('USDT',''),
         rate: parseFloat(d.lastFundingRate) * 100,
