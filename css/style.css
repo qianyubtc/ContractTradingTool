@@ -765,15 +765,17 @@ select:focus { border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-dim); }
   .last-update { display:none; }
 
   /* header */
-  .header { height:52px; padding:0 12px; gap:6px; overflow:visible; }
+  .header { height:52px; padding:0 10px; gap:4px; overflow:visible; }
   #analysisControls {
     flex:1; display:flex; align-items:center;
-    gap:5px; justify-content:flex-end; overflow:visible; flex-wrap:nowrap;
+    gap:4px; justify-content:flex-end; overflow:visible; flex-wrap:nowrap;
+    min-width:0;
   }
-  .symbol-input    { width:95px; font-size:12px; padding:5px 8px; }
-  #intervalSelect  { width:72px; font-size:12px; padding:5px 22px 5px 7px; }
-  .btn-primary     { padding:5px 10px; font-size:11px; letter-spacing:0; flex-shrink:0; }
-  #themeToggle     { width:30px; height:30px; font-size:13px; flex-shrink:0; }
+  .symbol-input    { width:80px; min-width:0; font-size:12px; padding:5px 6px; flex-shrink:1; }
+  #intervalSelect  { width:62px; min-width:0; font-size:11px; padding:5px 20px 5px 5px; flex-shrink:1; }
+  .btn-primary     { padding:5px 8px; font-size:10px; letter-spacing:0; flex-shrink:0; }
+  #themeToggle     { width:28px; height:28px; font-size:12px; flex-shrink:0; }
+  .logo            { font-size:11px; letter-spacing:2px; }
 
   /* main */
   .main { padding:12px 12px calc(72px + env(safe-area-inset-bottom,0px)) 12px; gap:12px; }
