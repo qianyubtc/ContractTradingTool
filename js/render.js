@@ -1712,15 +1712,22 @@ function renderFundingHistory(frData, symbol) {
     return;
   }
 
+  // 资金费率统一归一化为“百分比数值”：
+  // - 原始交易所常见格式：0.0001（小数） -> 0.01（百分比）
+  // - 若上游已给百分比（例如 0.01 表示 0.01%），避免再次 *100 放大。
+  const toFundingPct = (v) => {
+    const n = parseFloat(v);
+    if (!Number.isFinite(n)) return 0;
+    return Math.abs(n) <= 0.005 ? n * 100 : n;
+  };
+
   const recent = frData.slice(-12);
-  // 注意：frData 来自交易所原始接口，fundingRate 是小数（如 0.0001 = 0.01%）。
-  // 因此这里需要 *100 转成“百分比数值”再展示。
-  const maxFr  = Math.max(...recent.map(r => Math.abs(parseFloat(r.fundingRate) * 100)));
-  const avgFr  = recent.reduce((s, r) => s + parseFloat(r.fundingRate) * 100, 0) / recent.length;
+  const maxFr  = Math.max(...recent.map(r => Math.abs(toFundingPct(r.fundingRate))));
+  const avgFr  = recent.reduce((s, r) => s + toFundingPct(r.fundingRate), 0) / recent.length;
 
   let html = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;font-family:var(--mono);">近${recent.length}期资金费率趋势（均值 ${avgFr.toFixed(4)}%）</div>`;
   html += recent.map(r => {
-    const frPct = parseFloat(r.fundingRate) * 100;
+    const frPct = toFundingPct(r.fundingRate);
     const barW = maxFr > 0 ? Math.abs(frPct) / maxFr * 80 : 0;
     const time = new Date(r.fundingTime).toLocaleTimeString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
     const col  = frPct > 0 ? 'var(--red)' : 'var(--green)';
@@ -1783,8 +1790,13 @@ function renderRiskAlerts(coin, klines, ticker, frData) {
   const change  = ticker ? parseFloat(ticker.priceChangePercent) : 0;
   const vol24h  = ticker ? parseFloat(ticker.quoteVolume) : 0;
   const price   = ticker ? parseFloat(ticker.lastPrice) : 0;
-  // frData 的 fundingRate 仍是原始小数，这里转换成百分比数值后再做阈值判断。
-  const frPctLast  = frData?.length ? parseFloat(frData[frData.length-1]?.fundingRate || 0) * 100 : 0;
+  // 统一容错：兼容“原始小数”和“已是百分比”的两种上游口径。
+  const toFundingPct = (v) => {
+    const n = parseFloat(v);
+    if (!Number.isFinite(n)) return 0;
+    return Math.abs(n) <= 0.005 ? n * 100 : n;
+  };
+  const frPctLast  = frData?.length ? toFundingPct(frData[frData.length-1]?.fundingRate) : 0;
 
   // alerts 每项包含：级别、名称、解释、条形强度、方向色。
   const alerts = [];
