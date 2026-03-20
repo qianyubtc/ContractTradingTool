@@ -184,6 +184,22 @@ cp .env.example .env
 - `LIVE_PAGE_URL` 和 `LIVE_API_URL` 可访问且返回结构稳定
 - 前端 `js/config.js` 的 `API` 地址与后端端口一致
 
+### 开发环境示例（可直接复制到 `.env`）
+
+```env
+PORT=3000
+PROXY_ALLOWED_DOMAINS=api.binance.com,api1.binance.com,api2.binance.com,fapi.binance.com,api.coingecko.com,api.alternative.me,www.okx.com
+NEWS_RSS_SOURCES=[{"url":"https://www.coindesk.com/arc/outboundfeeds/rss/","name":"CoinDesk"},{"url":"https://cointelegraph.com/rss","name":"Cointelegraph"}]
+LIVE_PAGE_URL=
+LIVE_API_URL=
+LIVE_REFERER=
+LIVE_ORIGIN=
+```
+
+说明：
+- 上面配置可直接跑通大部分分析/监控数据（直播除外）
+- 直播数据源因站点差异较大，建议你确定目标站后再补 `LIVE_*`
+
 ## 已知问题与限制
 
 - `api.js` 的 `loadSymbolList` 当前走占位代理请求，常会退回本地热门币种列表
