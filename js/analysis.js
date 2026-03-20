@@ -22,8 +22,12 @@ function calcNewsSentiment(indicators, fgData, fundingData, lsData) {
   // 维度2：资金费率（合约市场拥挤度）
   if (fundingData?.status === 'fulfilled' && fundingData.value) {
     const fr = parseFloat(fundingData.value[0]?.fundingRate || 0) * 100;
-    if (fr > 0.05)       { score += 1; reasons.push(`资金费率+${fr.toFixed(3)}%(多头积极)`); }
-    else if (fr < -0.02) { score -= 1; reasons.push(`资金费率${fr.toFixed(3)}%(空头主导)`); }
+    // fr 已经是“百分比值”（例如 0.0005 -> 0.05，表示 0.05%）。
+    const FR_BULL_THRESHOLD_PCT = 0.05;
+    const FR_BEAR_THRESHOLD_PCT = -0.02;
+    // 使用含等号比较，避免 fr 恰好等于阈值时被误判为“中性”。
+    if (fr >= FR_BULL_THRESHOLD_PCT)       { score += 1; reasons.push(`资金费率+${fr.toFixed(3)}%(多头积极)`); }
+    else if (fr <= FR_BEAR_THRESHOLD_PCT)  { score -= 1; reasons.push(`资金费率${fr.toFixed(3)}%(空头主导)`); }
   }
 
   // 维度3：多空账户比（账户层面的方向倾向）

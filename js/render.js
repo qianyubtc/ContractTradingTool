@@ -204,45 +204,48 @@ function updateMiniChart(closes, targetId) {
   const isUp = closes[closes.length-1] > closes[0];
   const color = isUp ? 'var(--green)' : 'var(--red)';
 
+  function drawMiniChartOnCanvas(canvas) {
+    if (!canvas || typeof canvas.getContext !== 'function') return false;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    const cw = canvas.width || 180;
+    const ch = canvas.height || 52;
+    const padX = 4;
+    const padTop = 4;
+    const usableW = Math.max(1, cw - padX * 2);
+    const usableH = Math.max(1, ch - 8);
+
+    const points = closes.map((c, i) => ({
+      x: padX + (i / (closes.length - 1)) * usableW,
+      y: padTop + (1 - (c - min) / range) * usableH
+    }));
+
+    ctx.clearRect(0, 0, cw, ch);
+
+    // 先画面积，再画折线，保持和分析页视觉语义一致。
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, ch - 2);
+    points.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(points[points.length - 1].x, ch - 2);
+    ctx.closePath();
+    ctx.fillStyle = isUp ? 'rgba(0,230,118,0.14)' : 'rgba(255,61,87,0.14)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.strokeStyle = isUp ? '#00e676' : '#ff3d57';
+    ctx.lineWidth = 1.6;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    return true;
+  }
+
   // 事件页传入 canvas id（如 evMiniChart）时，走 canvas 渲染。
   if (targetId) {
     const canvas = document.getElementById(targetId);
-    if (canvas && typeof canvas.getContext === 'function') {
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      const cw = canvas.width || 180;
-      const ch = canvas.height || 52;
-      const padX = 4;
-      const padTop = 4;
-      const usableW = Math.max(1, cw - padX * 2);
-      const usableH = Math.max(1, ch - 8);
-
-      const points = closes.map((c, i) => ({
-        x: padX + (i / (closes.length - 1)) * usableW,
-        y: padTop + (1 - (c - min) / range) * usableH
-      }));
-
-      ctx.clearRect(0, 0, cw, ch);
-
-      // 先画面积，再画折线，保持和分析页视觉语义一致。
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, ch - 2);
-      points.forEach(p => ctx.lineTo(p.x, p.y));
-      ctx.lineTo(points[points.length - 1].x, ch - 2);
-      ctx.closePath();
-      ctx.fillStyle = isUp ? 'rgba(0,230,118,0.14)' : 'rgba(255,61,87,0.14)';
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
-      ctx.strokeStyle = isUp ? '#00e676' : '#ff3d57';
-      ctx.lineWidth = 1.6;
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
-      ctx.stroke();
-      return;
-    }
+    if (drawMiniChartOnCanvas(canvas)) return;
   }
 
   // 默认行为：分析页 SVG 小图。
@@ -253,9 +256,7 @@ function updateMiniChart(closes, targetId) {
   if (!lineEl || !fillEl || !gradStart || !gradEnd) {
     // 某些页面上下文不存在分析页 SVG 时，自动回退到事件页 canvas。
     const evCanvas = document.getElementById('evMiniChart');
-    if (!targetId && evCanvas && typeof evCanvas.getContext === 'function') {
-      updateMiniChart(closes, 'evMiniChart');
-    }
+    if (!targetId) drawMiniChartOnCanvas(evCanvas);
     return;
   }
   lineEl.setAttribute('points', pts);
