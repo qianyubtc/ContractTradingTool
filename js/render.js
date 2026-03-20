@@ -1181,7 +1181,13 @@ function renderEventPage(data) {
   verdictBadge.textContent = netScore > 0.1 ? '买入 CALL' : netScore < -0.1 ? '买入 PUT' : '建议观望';
   verdictBadge.className = `panel-badge ${netScore > 0.1 ? 'badge-green' : netScore < -0.1 ? 'badge-red' : 'badge-amber'}`;
 
-  const atrPct = price > 0 ? (closes ? Math.abs(closes[closes.length-1]-closes[closes.length-2])/price*100 : 1.5) : 1.5;
+  // closes 至少要有 2 根才能计算“相邻收盘波动率”，否则使用默认值防止 NaN 传播。
+  const hasEnoughCloses = Array.isArray(closes) && closes.length >= 2;
+  const lastClose = hasEnoughCloses ? parseFloat(closes[closes.length - 1]) : NaN;
+  const prevClose = hasEnoughCloses ? parseFloat(closes[closes.length - 2]) : NaN;
+  const atrPct = (price > 0 && Number.isFinite(lastClose) && Number.isFinite(prevClose))
+    ? (Math.abs(lastClose - prevClose) / price * 100)
+    : 1.5;
   const baseRatio = Math.max(1.3, Math.min(2.8, 2.5 - atrPct * 0.2));
   const payoutWin = (100 * baseRatio).toFixed(0);
   document.getElementById('evPayoutWin').textContent = `+${payoutWin} USDT`;
