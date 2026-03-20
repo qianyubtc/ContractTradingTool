@@ -724,7 +724,17 @@ function renderHeatmap(price, atr, longPct, shortPct, closes, highs, lows) {
 
 function renderOrderBook(depth, price) {
   // 订单簿模块核心：展示前几档买卖盘、价差、2%范围深度比与大单墙。
-  if (!depth || !depth.bids || !depth.asks) {
+  const hasValidBook =
+    depth &&
+    Array.isArray(depth.bids) &&
+    Array.isArray(depth.asks) &&
+    depth.bids.length > 0 &&
+    depth.asks.length > 0 &&
+    Array.isArray(depth.bids[0]) &&
+    Array.isArray(depth.asks[0]) &&
+    depth.bids[0].length >= 2 &&
+    depth.asks[0].length >= 2;
+  if (!hasValidBook) {
     document.getElementById('askBook').innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px">订单簿数据不可用（现货交易对）</div>';
     document.getElementById('liqDepthBadge').textContent = 'N/A';
     return;
