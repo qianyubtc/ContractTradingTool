@@ -88,6 +88,9 @@ npm test
 - `routes/market.js`
   - `ticker` 在 Binance 失败时可回退到 OKX
   - `depth` 在上游全部失败时返回空深度兜底
+- `routes/futures.js`
+  - `funding/ls/force` 在上游失败时返回空数组降级
+  - `oi` 在上游失败时返回空对象降级
 - `services/fetch.js`
   - `fetchJSON` 缓存命中（同 URL TTL 内仅请求一次）
   - 上游非 `ok` 响应时正确抛出 HTTP 错误
