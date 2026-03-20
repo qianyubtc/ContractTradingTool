@@ -79,6 +79,16 @@ npm test
 - `routes/live.js`（`LIVE_PROVIDER=mock`）
   - `GET /api/live` 返回结构完整的 mock 数据
   - 返回列表只包含 `live_status=1` 的直播项
+- `routes/news.js`
+  - RSS `item` 解析与币种关键词过滤
+  - 全部新闻源抓取失败时，降级返回 `200` + 空列表（不中断页面）
+- `services/fetch.js`
+  - `fetchJSON` 缓存命中（同 URL TTL 内仅请求一次）
+  - 上游非 `ok` 响应时正确抛出 HTTP 错误
+- 前端关键逻辑（`js/analysis.js` / `js/render.js`）
+  - `calcNewsSentiment` 资金费率阈值边界（`0.05%`）会正确命中
+  - `renderRiskAlerts` 对 fundingRate 小数口径/百分比口径做一致处理
+  - `updateMiniChart` 在缺失 SVG/canvas DOM 时不会抛异常
 
 ### 补充说明
 
