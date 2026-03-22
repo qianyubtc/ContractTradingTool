@@ -1,13 +1,19 @@
+// 拉取可交易币种列表。
+// 注意：当远端接口不可用时会自动降级到内置热门币种，确保页面可用。
 async function loadSymbolList() {
   try {
+    // 这里目前是占位请求（u 为空），通常会失败并走 catch 的默认币种逻辑。
     const r = await fetch(`${API}/api/proxy?u=${encodeURIComponent('')}`);
     if (!r.ok) return;
     const d = await r.json();
     const popular = ['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT','LTC','MATIC','NEAR','ARB','OP'];
+    // 仅保留“USDT 永续 + 正在交易”的合约，避免无效标的进入下拉框。
     window._allSymbols = (d.symbols || [])
       .filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT' && s.contractType === 'PERPETUAL')
       .map(s => ({ symbol: s.symbol, base: s.baseAsset }))
+      // 去重：避免同一 symbol 重复出现。
       .filter((s, i, arr) => arr.findIndex(x => x.symbol === s.symbol) === i)
+      // 排序策略：先热门币，再按字母序，兼顾实用与可查找性。
       .sort((a, b) => {
         const ai = popular.indexOf(a.base), bi = popular.indexOf(b.base);
         if (ai >= 0 && bi >= 0) return ai - bi;
@@ -16,12 +22,14 @@ async function loadSymbolList() {
         return a.base.localeCompare(b.base);
       });
   } catch(e) {
+    // 后备方案：固定热门币，保证页面最差也能用。
     window._allSymbols = ['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','AVAX','LINK','DOT','LTC','MATIC','NEAR','ARB','OP']
       .map(b => ({ symbol: b+'USDT', base: b }));
   }
 }
 
 function renderSymbolDropdown(items) {
+  // 把可选币种渲染成下拉列表（最多显示 80 项，避免过长卡顿）。
   const dd = document.getElementById('symbolDropdown');
   if (!dd) return;
   const current = document.getElementById('symbolSelect').value;
@@ -39,6 +47,7 @@ function renderSymbolDropdown(items) {
 }
 
 function openSymbolDropdown() {
+  // 输入框聚焦时显示完整列表，并把下拉定位到输入框正下方。
   const inp = document.getElementById('symbolInput');
   if (!inp) return;
   let dd = document.getElementById('symbolDropdown');
@@ -59,6 +68,7 @@ function openSymbolDropdown() {
 }
 
 function filterSymbols(val) {
+  // 统一清洗用户输入（去除 / - 空格），提高检索命中率。
   const dd = document.getElementById('symbolDropdown');
   if (!dd) return;
   window._symbolDropdownOpen = true;
@@ -71,6 +81,7 @@ function filterSymbols(val) {
 }
 
 function selectSymbol(symbol, base) {
+  // 用户选择后：同步隐藏 select + 可见 input，并立即触发主分析刷新。
   if (!symbol || symbol.trim() === '') return;
   document.getElementById('symbolSelect').value = symbol;
   const inp = document.getElementById('symbolInput');
@@ -92,6 +103,7 @@ function closeSymbolDropdown() {
   inp.placeholder = base + '/USDT';
 }
 
+// K 线是整个分析流程的核心输入数据（后续指标全部基于它计算）。
 async function getKlines(symbol, interval, limit=300) {
   const r = await fetchTimeout(`${API}/api/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`, 10000);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -99,6 +111,7 @@ async function getKlines(symbol, interval, limit=300) {
 }
 
 async function getTicker(symbol) {
+  // symbol 非法时直接返回，避免发起无效请求。
   if (!symbol || symbol.trim() === '') return null;
   const r = await fetchTimeout(`${API}/api/ticker?symbol=${encodeURIComponent(symbol)}`, 10000);
   if (!r.ok) return null;
@@ -106,6 +119,7 @@ async function getTicker(symbol) {
 }
 
 async function getFundingRate(symbol) {
+  // “失败返回 null”而不是 throw，避免非关键接口导致全局流程中断。
   try {
     const r = await fetchTimeout(`${API}/api/funding?symbol=${symbol}`, 10000);
     return r.ok ? r.json() : null;
@@ -113,6 +127,7 @@ async function getFundingRate(symbol) {
 }
 
 async function getOpenInterest(symbol) {
+  // OI 数据用于监控和情绪辅助，不可用时可降级。
   try {
     const r = await fetchTimeout(`${API}/api/oi?symbol=${symbol}`, 10000);
     return r.ok ? r.json() : null;
@@ -120,12 +135,14 @@ async function getOpenInterest(symbol) {
 }
 
 async function getTopLSRatio(symbol) {
+  // 该接口当前仅供扩展，主流程中并未强依赖。
   try {
     return fetchTimeout(`${API}/api/proxy?u=${encodeURIComponent(`https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol=${symbol}&period=5m&limit=1`)}`, 10000).then(r=>r.ok?r.json():null);
   } catch { return null; }
 }
 
 async function getGlobalLSRatio(symbol) {
+  // 返回数组结构（通常取第 0 项），调用方需做判空。
   try {
     const r = await fetchTimeout(`${API}/api/ls?symbol=${symbol}`, 10000);
     return r.ok ? r.json() : null;
@@ -133,6 +150,7 @@ async function getGlobalLSRatio(symbol) {
 }
 
 async function getFearGreed() {
+  // 恐惧贪婪属于慢频数据，失败时不影响核心行情分析。
   try {
     const r = await fetchTimeout(`${API}/api/fg`, 10000);
     return r.ok ? r.json() : null;
@@ -140,6 +158,7 @@ async function getFearGreed() {
 }
 
 async function getForceOrders(symbol) {
+  // 强平数据经常受限流/权限影响，失败时保持 null 即可。
   try {
     const r = await fetchTimeout(`${API}/api/force?symbol=${symbol}`, 10000);
     return r.ok ? r.json() : null;
@@ -147,6 +166,7 @@ async function getForceOrders(symbol) {
 }
 
 async function getOrderBook(symbol, limit=20) {
+  // 订单簿深度是“增强信息”，并非硬依赖。
   try {
     const r = await fetchTimeout(`${API}/api/depth?symbol=${symbol}&limit=${limit}`, 10000);
     return r.ok ? r.json() : null;
@@ -154,6 +174,7 @@ async function getOrderBook(symbol, limit=20) {
 }
 
 async function getCGCommunity(coin) {
+  // CoinGecko 社区数据有 5 分钟前端缓存，减少重复请求和限流风险。
   if (!coin || !/^[a-zA-Z0-9]+$/.test(coin)) return null;
   const cacheKey = 'cg_' + coin;
   const cached = _cgCache[cacheKey];
@@ -168,6 +189,7 @@ async function getCGCommunity(coin) {
 }
 
 async function getOnchainTrades(coin) {
+  // 仅对有预设池地址的币种生效，其他币种直接返回 null。
   const poolMap = {
     BTC:  'eth_0xcbcdf9626bc03e24f779434178a73a0b4bad62ed',
     ETH:  'eth_0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8',
@@ -183,6 +205,7 @@ async function getOnchainTrades(coin) {
 }
 
 async function getTrendingCoins() {
+  // 这里的缓存属于前端内存缓存，刷新页面后会丢失。
   if (_trendingCache && Date.now() - _trendingTs < 300000) return _trendingCache;
   try {
     const r = await fetchTimeout(`${API}/api/trending`, 10000);
@@ -194,6 +217,7 @@ async function getTrendingCoins() {
 }
 
 async function getGlobalMarket() {
+  // 与 trending 一样，做 5 分钟内存缓存。
   if (_globalCache && Date.now() - _globalTs < 300000) return _globalCache;
   try {
     const r = await fetchTimeout(`${API}/api/global`, 10000);
@@ -205,6 +229,7 @@ async function getGlobalMarket() {
 }
 
 async function getAggTrades(symbol, limit=50) {
+  // 主动返回 []，方便调用方直接 map/filter，不必额外判空。
   try {
     const r = await fetchTimeout(`${API}/api/proxy?u=${encodeURIComponent(`https://api.binance.com/api/v3/aggTrades?symbol=${symbol}&limit=${limit}`)}`, 10000);
     return r.ok ? r.json() : [];
@@ -216,6 +241,7 @@ async function getBinanceAnnouncements(coin) {
 }
 
 async function getNewsCV(coin, interval) {
+  // interval -> 回看窗口小时数映射，用于筛掉太旧的新闻。
   const hoursMap = { '15m':1, '1h':6, '4h':24, '1d':168 };
   const hours = hoursMap[interval] || 6;
   try {
@@ -230,6 +256,7 @@ async function getNewsCV(coin, interval) {
 }
 
 async function getNewsPanic(coin, interval) {
+  // CryptoPanic 免费 token 仅示例用途，生产环境建议替换为自有 key。
   const hoursMap = { '15m':1, '1h':6, '4h':24, '1d':168 };
   const hours = hoursMap[interval] || 6;
   try {
@@ -249,6 +276,7 @@ async function getNewsAlternative() {
 }
 
 async function getNewsForSentiment(coin = 'BTC') {
+  // 聚合多个新闻源并统一字段，供前端情绪模块直接消费。
   try {
     const [cv, panic] = await Promise.allSettled([
       getNewsCV(coin, '1h'),
@@ -256,6 +284,7 @@ async function getNewsForSentiment(coin = 'BTC') {
     ]);
     const cvItems    = cv.status === 'fulfilled' && cv.value?.results ? cv.value.results : [];
     const panicItems = panic.status === 'fulfilled' && panic.value?.results ? panic.value.results : [];
+    // 统一字段结构，避免不同源字段名不一致导致渲染报错。
     const normalize = (items, source) => items.map(item => ({
       title: item.title || item.headline || '',
       published_at: item.published_at || item.publishedAt || item.date || '',

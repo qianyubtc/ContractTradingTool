@@ -1,5 +1,7 @@
+// app.js 负责页面壳逻辑：加载子页面、切换 Tab、主题与初始化调度。
 const _pageCache = {};
 
+// 按需加载 pages/*.html，已加载过的页面直接复用缓存，避免重复请求。
 async function loadPageContent(page) {
   const containerId = 'page' + page.charAt(0).toUpperCase() + page.slice(1);
   const container = document.getElementById(containerId);
@@ -18,6 +20,7 @@ async function loadPageContent(page) {
   }
 }
 
+// 页面切换总入口：激活 UI 后再触发对应页面的数据加载函数。
 function switchPage(page) {
   _currentPage = page;
   document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));

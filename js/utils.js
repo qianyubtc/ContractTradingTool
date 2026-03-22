@@ -1,3 +1,4 @@
+// 常用工具函数：格式化、超时请求、统一 JSON 请求错误处理。
 function fmt(n, dec=2) {
   if (n === null || n === undefined || isNaN(n)) return '--';
   if (Math.abs(n) >= 1e9) return (n/1e9).toFixed(2)+'B';
@@ -54,6 +55,7 @@ function proxyUrl(url) {
   return `${API}/api/proxy?u=${encodeURIComponent(url)}`;
 }
 
+// 给 fetch 增加超时控制，避免接口长时间卡住页面。
 function fetchTimeout(url, ms = 9000) {
   const ctrl  = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
@@ -61,6 +63,10 @@ function fetchTimeout(url, ms = 9000) {
     .finally(() => clearTimeout(timer));
 }
 
+// 统一 JSON 请求入口：
+// 1) 可选自动走后端 /api/proxy
+// 2) 自动处理 400/403/非 2xx 错误
+// 3) 将超时报错转换为可读的 timeout
 async function fetchJSON(url, useProxy = true) {
   const target = useProxy ? proxyUrl(url) : url;
   try {

@@ -1,3 +1,4 @@
+// monitor.js：监控页聚合多类“异动”数据（涨跌、费率、清算、持仓、多空比）。
 let _monTimer = null;
 let _monPriceMode = 'up';
 let _monAllTickers = [];
@@ -21,6 +22,7 @@ async function monGetValidSymbols() {
   return _validFuturesSymbols;
 }
 
+// 监控页主入口：并行拉取多个模块后统一刷新时间戳与定时器。
 async function loadMonitor(force = false) {
   const lastUpdate = document.getElementById('monLastUpdate');
   if (lastUpdate) lastUpdate.textContent = '加载中...';

@@ -1,3 +1,6 @@
+// 前端全局配置：
+// - 本地开发时 API 建议填 'http://localhost:3000'
+// - 如果前后端同域部署，可保持空字符串，走相对路径
 const API       = '';
 const BINANCE   = '';
 const BINANCE_F = '';

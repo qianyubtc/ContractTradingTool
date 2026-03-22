@@ -1,4 +1,7 @@
+// render.js：只负责“把计算结果翻译成页面展示”。
+// 约定：计算逻辑尽量留在 indicators/analysis，这里专注渲染与文案组织。
 function makeSignalPill(type) {
+  // type -> UI 样式与文字映射，统一所有指标行的“方向标签”。
   const map = {
     bull: ['signal-pill signal-bull', '▲ 利多'],
     bear: ['signal-pill signal-bear', '▼ 利空'],
@@ -9,10 +12,12 @@ function makeSignalPill(type) {
 }
 
 function makeBarColor(type) {
+  // 给进度条选择颜色（多=绿，空=红，中=黄）。
   return type === 'bull' ? 'green' : type === 'bear' ? 'red' : 'amber';
 }
 
 function renderIndicatorRow(id, name, ind) {
+  // 单行指标渲染模板：名称 + 强度条 + 解释 + 数值 + 方向 pill。
   const barColor = makeBarColor(ind.type);
   return `
     <div class="indicator-row" id="row-${id}">
@@ -29,10 +34,13 @@ function renderIndicatorRow(id, name, ind) {
 }
 
 function renderGroup(containerId, badgeId, indicators, group, nameMap) {
+  // 先按分组筛选指标（例如 trend / momentum）。
   const filtered = Object.entries(indicators).filter(([,v]) => v.group === group);
+  // 把每个指标对象渲染成一行 HTML。
   const html = filtered.map(([k,v]) => renderIndicatorRow(k, nameMap[k]||k, v)).join('');
   document.getElementById(containerId).innerHTML = html;
 
+  // 统计该分组多空数量，用于右上角徽标快速判断。
   const bulls = filtered.filter(([,v]) => v.type==='bull').length;
   const bears = filtered.filter(([,v]) => v.type==='bear').length;
   const badge = document.getElementById(badgeId);
@@ -42,8 +50,11 @@ function renderGroup(containerId, badgeId, indicators, group, nameMap) {
 }
 
 function renderFibonacci(fib) {
+  // fib 来自 analyzeAll，已包含 levels/swingHigh/swingLow/pct 等关键字段。
   const { levels, swingHigh, swingLow, price, pct, nearestBelow, nearestAbove } = fib;
+  // 只展示最常用的几个 Fib 位，避免信息过载。
   const keyLevels = [['0.0','区间低点'],['23.6','浅回调'],['38.2','黄金回调'],['50.0','中位支撑'],['61.8','黄金分割'],['78.6','深回调'],['100.0','区间高点']];
+  // 把每个关键位渲染成一个卡片，并高亮“当前价格附近”卡片。
   const levelsHtml = keyLevels.map(([k, label]) => {
     const val = levels[k];
     const isNear = Math.abs(price - val) / price < 0.008;
@@ -58,6 +69,7 @@ function renderFibonacci(fib) {
   }).join('');
   document.getElementById('fibLevels').innerHTML = levelsHtml;
 
+  // 百分位条：把当前 pct 限制到 [0,100] 后渲染进度。
   const barPct = Math.min(100, Math.max(0, pct));
   document.getElementById('fibBar').style.width = barPct + '%';
   const barColor = pct > 78.6 ? 'var(--red)' : pct < 23.6 ? 'var(--green)' : 'var(--amber)';
@@ -66,6 +78,7 @@ function renderFibonacci(fib) {
   document.getElementById('fibCurrentLabel').style.color = barColor;
   window._lastFibPct = pct;
 
+  // 根据价格所处区间输出可读结论（小白友好文案）。
   let sigType = 'neutral', sigText = '';
   if (pct < 23.6) { sigType = 'bull'; sigText = `价格处于0%-23.6%区间（强支撑区），接近波段低点，超跌反弹概率高。支撑位：${fmtPrice(levels['23.6'])}`; }
   else if (pct < 38.2) { sigType = 'bull'; sigText = `价格处于23.6%-38.2%区间（浅回调区），属于健康回调，多头防守位置。支撑位：${fmtPrice(levels['38.2'])}`; }
@@ -85,6 +98,7 @@ function renderFibonacci(fib) {
 }
 
 function renderVegas(vegas, indicators) {
+  // Vegas 模块分两部分：指标行（renderGroup）+ 交易逻辑文字说明。
   renderGroup('vegasList', 'vegasBadge', indicators, 'vegas', nameMap);
   const price = vegas.price;
   const detail = `
@@ -106,6 +120,7 @@ function renderVegas(vegas, indicators) {
 }
 
 function renderElliott(elliott) {
+  // elliott 结果由计算层给出，这里负责“阶段 + 置信度 + 风险提示”展示。
   const phaseColor = elliott.phase==='bull'?'var(--green)':elliott.phase==='bear'?'var(--red)':'var(--amber)';
   const confidenceText = elliott.confidence==='high'?'高置信度':elliott.confidence==='medium'?'中置信度':'低置信度';
   const confColor = elliott.confidence==='high'?'var(--green)':elliott.confidence==='medium'?'var(--amber)':'var(--text-muted)';
@@ -140,11 +155,14 @@ function renderElliott(elliott) {
 }
 
 function renderScore(indicators) {
+  // 汇总总指标数量，并按 bull/bear/neutral 分类计数。
   const all = Object.values(indicators);
   const bulls = all.filter(v => v.type==='bull').length;
   const bears = all.filter(v => v.type==='bear').length;
   const neutral = all.filter(v => v.type==='neutral').length;
+  // 只用 bull 与 bear 参与多空比例，neutral 仅作展示计数。
   const total = bulls + bears;
+  // longScore 不是收益率，而是“看多信号占比”。
   const longScore = total === 0 ? 50 : Math.round(bulls / total * 100);
   const shortScore = 100 - longScore;
 
@@ -156,6 +174,7 @@ function renderScore(indicators) {
   document.getElementById('countBear').textContent = bears;
   document.getElementById('countNeutral').textContent = neutral;
 
+  // 根据分值区间输出最终建议词（LONG/SHORT/WAIT）。
   let verdict = '', verdictColor = 'var(--text-muted)', badgeClass = 'badge-blue', badgeText = '';
   if (longScore >= 70) { verdict = 'LONG'; verdictColor = 'var(--green)'; badgeClass = 'badge-green'; badgeText = '强烈做多'; }
   else if (longScore >= 55) { verdict = 'LONG?'; verdictColor = 'var(--green)'; badgeClass = 'badge-green'; badgeText = '偏多'; }
@@ -171,7 +190,9 @@ function renderScore(indicators) {
   badge.textContent = badgeText;
 }
 
-function updateMiniChart(closes) {
+function updateMiniChart(closes, targetId) {
+  if (!Array.isArray(closes) || closes.length < 2) return;
+  // 折线坐标归一化到固定画布（w=200,h=60），用于顶部小图。
   const min = Math.min(...closes);
   const max = Math.max(...closes);
   const range = max - min || 1;
@@ -179,18 +200,77 @@ function updateMiniChart(closes) {
   const pts = closes.map((c, i) => `${(i / (closes.length-1) * w).toFixed(1)},${(h - (c-min)/range*h*0.85-4).toFixed(1)}`).join(' ');
   const fillPts = `0,${h} ` + pts + ` ${w},${h}`;
 
+  // 起点到终点上涨则用绿色，否则红色。
   const isUp = closes[closes.length-1] > closes[0];
   const color = isUp ? 'var(--green)' : 'var(--red)';
-  document.getElementById('miniChartLine').setAttribute('points', pts);
-  document.getElementById('miniChartLine').setAttribute('stroke', color);
-  document.getElementById('miniChartFill').setAttribute('points', fillPts);
-  document.querySelector('#chartGrad stop:first-child').setAttribute('stop-color', isUp ? '#00e676' : '#ff3d57');
-  document.querySelector('#chartGrad stop:last-child').setAttribute('stop-color', isUp ? '#00e676' : '#ff3d57');
+
+  function drawMiniChartOnCanvas(canvas) {
+    if (!canvas || typeof canvas.getContext !== 'function') return false;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    const cw = canvas.width || 180;
+    const ch = canvas.height || 52;
+    const padX = 4;
+    const padTop = 4;
+    const usableW = Math.max(1, cw - padX * 2);
+    const usableH = Math.max(1, ch - 8);
+
+    const points = closes.map((c, i) => ({
+      x: padX + (i / (closes.length - 1)) * usableW,
+      y: padTop + (1 - (c - min) / range) * usableH
+    }));
+
+    ctx.clearRect(0, 0, cw, ch);
+
+    // 先画面积，再画折线，保持和分析页视觉语义一致。
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, ch - 2);
+    points.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(points[points.length - 1].x, ch - 2);
+    ctx.closePath();
+    ctx.fillStyle = isUp ? 'rgba(0,230,118,0.14)' : 'rgba(255,61,87,0.14)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.strokeStyle = isUp ? '#00e676' : '#ff3d57';
+    ctx.lineWidth = 1.6;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    return true;
+  }
+
+  // 事件页传入 canvas id（如 evMiniChart）时，走 canvas 渲染。
+  if (targetId) {
+    const canvas = document.getElementById(targetId);
+    if (drawMiniChartOnCanvas(canvas)) return;
+  }
+
+  // 默认行为：分析页 SVG 小图。
+  const lineEl = document.getElementById('miniChartLine');
+  const fillEl = document.getElementById('miniChartFill');
+  const gradStart = document.querySelector('#chartGrad stop:first-child');
+  const gradEnd = document.querySelector('#chartGrad stop:last-child');
+  if (!lineEl || !fillEl || !gradStart || !gradEnd) {
+    // 某些页面上下文不存在分析页 SVG 时，自动回退到事件页 canvas。
+    const evCanvas = document.getElementById('evMiniChart');
+    if (!targetId) drawMiniChartOnCanvas(evCanvas);
+    return;
+  }
+  lineEl.setAttribute('points', pts);
+  lineEl.setAttribute('stroke', color);
+  fillEl.setAttribute('points', fillPts);
+  gradStart.setAttribute('stop-color', isUp ? '#00e676' : '#ff3d57');
+  gradEnd.setAttribute('stop-color', isUp ? '#00e676' : '#ff3d57');
 }
 
 function renderFearGreed(value, text) {
+  // 恐惧贪婪模块：同一份值同步到弧线、数字、建议、历史条形图等多个区域。
   const num = parseInt(value);
 
+  // 色彩策略：越贪婪越偏绿，越恐惧越偏红。
   let color = 'var(--red)';
   if (num > 75)      color = 'var(--green)';
   else if (num > 55) color = '#8bc34a';
@@ -253,6 +333,7 @@ function renderFearGreed(value, text) {
     ).join('');
   }
 
+  // 这里的历史是“演示型拟合历史”，不是后端真实历史序列。
   const histEl = document.getElementById('fgHistory');
   if (histEl) {
     const hist = [];
@@ -281,6 +362,7 @@ function renderFearGreed(value, text) {
 
 
 function renderLSRatio(longPct, shortPct) {
+  // longPct/shortPct 是 0~1 比例值，这里转成百分比显示。
   const lp = parseFloat(longPct) * 100;
   const sp = parseFloat(shortPct) * 100;
   document.getElementById('lsBarLong').style.width = lp.toFixed(1) + '%';
@@ -291,11 +373,14 @@ function renderLSRatio(longPct, shortPct) {
 }
 
 function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
+  // 标签法则：把复杂指标翻译为简短标签，面向快速阅读。
   const tags = [];
   const all = Object.values(indicators);
   const bulls = all.filter(v => v.type==='bull').length;
   const bears = all.filter(v => v.type==='bear').length;
+  // bulls/bears 是后续“交易建议文案”的主依据。
 
+  // 第一层：均线体系标签（优先放在前面，便于用户第一眼看到趋势结构）。
   if (indicators.ema?.type === 'bull' && indicators.ema200?.type === 'bull')
     tags.push({ text: '均线多头排列', cls: 'badge-green' });
   else if (indicators.ema?.type === 'bear' && indicators.ema200?.type === 'bear')
@@ -332,6 +417,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
   else if (indicators.ichimoku?.type === 'neutral')
     tags.push({ text: '一目云内震荡', cls: 'badge-amber' });
 
+  // 第二层：趋势强度标签（ADX）。
   if (indicators.adx) {
     const adxVal = parseFloat(indicators.adx.value);
     if (adxVal > 30 && indicators.adx.type === 'bull')
@@ -362,6 +448,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
   else if (indicators.vegasTrend?.type === 'neutral')
     tags.push({ text: '维加斯通道内震荡', cls: 'badge-amber' });
 
+  // 第三层：动量过热/过冷标签。
   if (indicators.rsi) {
     const rv = parseFloat(indicators.rsi.value);
     if (rv < 30) tags.push({ text: `RSI超卖(${rv.toFixed(0)})`, cls: 'badge-green' });
@@ -370,6 +457,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
     else tags.push({ text: `RSI弱势区(${rv.toFixed(0)})`, cls: 'badge-red' });
   }
 
+  // 第四层：短线摆动指标补充（KDJ/StochRSI/WR/CCI/ROC）。
   if (indicators.kdj?.type === 'bull') tags.push({ text: 'KDJ金叉', cls: 'badge-green' });
   else if (indicators.kdj?.type === 'bear') tags.push({ text: 'KDJ死叉', cls: 'badge-red' });
 
@@ -393,6 +481,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
   else if (indicators.roc?.type === 'bear')
     tags.push({ text: `ROC负向动能(${indicators.roc.value})`, cls: 'badge-red' });
 
+  // 第五层：量价与资金流标签（Volume/OBV/CMF/MFI/VWAP）。
   if (indicators.volume?.type === 'bull') tags.push({ text: '放量上涨', cls: 'badge-green' });
   else if (indicators.volume?.type === 'bear') tags.push({ text: '放量下跌', cls: 'badge-red' });
 
@@ -419,6 +508,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
   else if (indicators.donchian?.type === 'bear')
     tags.push({ text: '唐奇安通道上轨', cls: 'badge-red' });
 
+  // 第六层：波动环境标签（ATR / Fib 区间）。
   if (indicators.atr) {
     const atrVal = parseFloat(indicators.atr.value);
     if (atrVal > 3) tags.push({ text: `ATR高波动(${atrVal.toFixed(1)}%)`, cls: 'badge-amber' });
@@ -442,8 +532,11 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
   else if (indicators.vegasEma12?.type === 'bear')
     tags.push({ text: 'EMA12跌破维加斯通道', cls: 'badge-red' });
 
+  // 第七层：情绪面标签（资金费率/多空比/恐惧贪婪）。
   if (fundingRate !== null) {
-    const fr = parseFloat(fundingRate) * 100;
+    // analysis.js 已将原始小数 fundingRate 转为“百分比数值”：
+    // 例如原始 0.000123 -> 0.0123（表示 0.0123%），这里直接用，不再 *100。
+    const fr = parseFloat(fundingRate);
     if (fr > 0.1) tags.push({ text: `资金费率偏高 ${fr.toFixed(3)}%`, cls: 'badge-red' });
     else if (fr > 0.05) tags.push({ text: `资金费率偏高 ${fr.toFixed(3)}%`, cls: 'badge-amber' });
     else if (fr < -0.05) tags.push({ text: `资金费率为负 ${fr.toFixed(3)}%`, cls: 'badge-green' });
@@ -465,6 +558,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
     else tags.push({ text: `情绪中性(${fv})`, cls: 'badge-blue' });
   }
 
+  // 展示优先级：强信号（绿/红）优先，提示类（黄/蓝）靠后。
   const order = { 'badge-green': 0, 'badge-red': 1, 'badge-amber': 2, 'badge-blue': 3 };
   tags.sort((a, b) => (order[a.cls]||3) - (order[b.cls]||3));
 
@@ -473,6 +567,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
   ).join('');
   document.getElementById('sentimentTags').innerHTML = html || '<span style="color:var(--text-muted)">暂无信号</span>';
 
+  // longScore 只反映“方向一致性”，不代表胜率或收益。
   const longScore = bulls / (bulls + bears || 1) * 100;
   const macdSig   = indicators.macd?.type;
   const rsiVal    = indicators.rsi ? parseFloat(indicators.rsi.value) : 50;
@@ -480,6 +575,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
   const ema200Sig = indicators.ema200?.type;
   const bollSig   = indicators.boll?.type;
 
+  // 最终建议是规则文案，不是自动下单信号。
   let advice = '';
   if (longScore >= 70) {
     advice = `多数指标共振看多（利多${bulls}项 / 利空${bears}项）。` +
@@ -509,6 +605,7 @@ function renderSentimentTags(indicators, fundingRate, fgVal, lsRatio) {
 }
 
 function renderLiquidation(forceOrders, klines) {
+  // 清算模块：统计近一小时多/空强平规模，结合 ATR 估算风险区间。
   const closes  = klines.map(k => parseFloat(k[4]));
   const highs   = klines.map(k => parseFloat(k[2]));
   const lows    = klines.map(k => parseFloat(k[3]));
@@ -520,6 +617,7 @@ function renderLiquidation(forceOrders, klines) {
   const now = Date.now();
   const oneHour = 3600000;
   if (forceOrders && forceOrders.length) {
+    // 有真实强平数据时：按 side 区分多空爆仓金额。
     forceOrders.forEach(o => {
       if (now - o.time > oneHour) return;
       const val = parseFloat(o.origQty) * parseFloat(o.price);
@@ -527,6 +625,7 @@ function renderLiquidation(forceOrders, klines) {
       else shortLiq += val;
     });
   } else {
+    // 无真实数据时：退化为基于近期波动和成交量的估算值（演示用途）。
     const recentVol = volumes.slice(-12).reduce((a,b)=>a+b,0);
     const avgVol = volumes.slice(-50,-12).reduce((a,b)=>a+b,0)/38;
     const volSurge = recentVol / (avgVol * 12);
@@ -574,6 +673,7 @@ function renderLiquidation(forceOrders, klines) {
 }
 
 function renderHeatmap(price, atr, longPct, shortPct, closes, highs, lows) {
+  // 构建“当前价上下 ±3ATR”价格区间，切成 12 档做清算热力估算。
   const range = atr * 3;
   const step  = range * 2 / 12;
   const levels = [];
@@ -581,6 +681,7 @@ function renderHeatmap(price, atr, longPct, shortPct, closes, highs, lows) {
     levels.push(price + range - i * step);
   }
 
+  // 每一档估算多/空清算密度：离当前价越远密度衰减（distFactor）。
   const rows = [];
   for (let i = 0; i < 12; i++) {
     const lvlPrice = (levels[i] + levels[i+1]) / 2;
@@ -593,6 +694,7 @@ function renderHeatmap(price, atr, longPct, shortPct, closes, highs, lows) {
 
   const maxDens = Math.max(...rows.map(r => Math.max(r.longDens, r.shortDens)));
 
+  // 条形颜色：价格上方偏空清（绿系），下方偏多清（红系）。
   const html = rows.map(r => {
     const longW  = (r.longDens  / maxDens * 100).toFixed(1);
     const shortW = (r.shortDens / maxDens * 100).toFixed(1);
@@ -621,12 +723,24 @@ function renderHeatmap(price, atr, longPct, shortPct, closes, highs, lows) {
 }
 
 function renderOrderBook(depth, price) {
-  if (!depth || !depth.bids || !depth.asks) {
+  // 订单簿模块核心：展示前几档买卖盘、价差、2%范围深度比与大单墙。
+  const hasValidBook =
+    depth &&
+    Array.isArray(depth.bids) &&
+    Array.isArray(depth.asks) &&
+    depth.bids.length > 0 &&
+    depth.asks.length > 0 &&
+    Array.isArray(depth.bids[0]) &&
+    Array.isArray(depth.asks[0]) &&
+    depth.bids[0].length >= 2 &&
+    depth.asks[0].length >= 2;
+  if (!hasValidBook) {
     document.getElementById('askBook').innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px">订单簿数据不可用（现货交易对）</div>';
     document.getElementById('liqDepthBadge').textContent = 'N/A';
     return;
   }
 
+  // UI 只展示前 8 档，既能看结构又不至于拥挤。
   const bids = depth.bids.slice(0, 8).map(b => ({ price: parseFloat(b[0]), size: parseFloat(b[1]) }));
   const asks = depth.asks.slice(0, 8).map(a => ({ price: parseFloat(a[0]), size: parseFloat(a[1]) })).reverse();
 
@@ -659,6 +773,7 @@ function renderOrderBook(depth, price) {
 
   const bestAsk = parseFloat(depth.asks[0][0]);
   const bestBid = parseFloat(depth.bids[0][0]);
+  // spread 越小通常表示流动性越好。
   const spread  = bestAsk - bestBid;
   const spreadPct = (spread / bestBid * 100).toFixed(4);
   document.getElementById('obSpread').textContent = `${fmtPrice(spread)} (${spreadPct}%)`;
@@ -673,6 +788,7 @@ function renderOrderBook(depth, price) {
   document.getElementById('bidDepth2').textContent = '$' + fmt(bidDepth2);
   document.getElementById('askDepth2').textContent = '$' + fmt(askDepth2);
 
+  // depthRatio>1 买盘更厚，<1 卖盘更厚。
   const depthRatio = askDepth2 > 0 ? (bidDepth2 / askDepth2).toFixed(2) : '--';
   document.getElementById('depthRatio').textContent = depthRatio;
   const drNum = parseFloat(depthRatio);
@@ -702,6 +818,7 @@ function renderOrderBook(depth, price) {
 }
 
 function calcVolumeProfile(klines, bins=16) {
+  // 成交量分布（VP）：把价格区间分桶，累计每桶成交量并区分买卖倾向。
   const highs   = klines.map(k => parseFloat(k[2]));
   const lows    = klines.map(k => parseFloat(k[3]));
   const closes  = klines.map(k => parseFloat(k[4]));
@@ -717,6 +834,7 @@ function calcVolumeProfile(klines, bins=16) {
     buyVol: 0, sellVol: 0, totalVol: 0
   }));
 
+  // 简化分配：阳线偏买量、阴线偏卖量（70/30），用于近似订单流。
   klines.forEach((k, i) => {
     const open = opens[i], close = closes[i], vol = volumes[i];
     const bin = Math.min(bins-1, Math.floor((closes[i] - priceLow) / step));
@@ -733,6 +851,7 @@ function calcVolumeProfile(klines, bins=16) {
 }
 
 function renderVolumeProfile(klines) {
+  // 展示 POC（最大成交量价格带）及当前价相对位置。
   const price = parseFloat(klines[klines.length-1][4]);
   const { profile, maxVol, poc } = calcVolumeProfile(klines, 16);
 
@@ -762,11 +881,13 @@ function renderVolumeProfile(klines) {
 }
 
 function renderVolumeDelta(klines) {
+  // Volume Delta：估算主动买卖差，观察短期资金偏向。
   const opens   = klines.map(k => parseFloat(k[1]));
   const closes  = klines.map(k => parseFloat(k[4]));
   const volumes = klines.map(k => parseFloat(k[5]));
   const last = klines.length - 1;
 
+  // 根据 K 线实体强弱估算 buyVol/sellVol。
   const deltas = klines.map((k, i) => {
     const open = opens[i], close = closes[i], vol = volumes[i];
     const bull = close >= open;
@@ -818,6 +939,7 @@ function renderVolumeDelta(klines) {
 }
 
 function renderVolumePrice(klines) {
+  // 量价分析：聚合背离、突破、量能变化、大单与缩量信号。
   const opens   = klines.map(k => parseFloat(k[1]));
   const highs   = klines.map(k => parseFloat(k[2]));
   const lows    = klines.map(k => parseFloat(k[3]));
@@ -980,7 +1102,12 @@ function generateSyntheticNews(coin, interval, indicators) {
   return items;
 }
 
+// 事件页渲染主函数：
+// 输入：analysis 阶段缓存的数据（指标、价格、情绪、结构信息）
+// 处理：计算事件维度权重并生成方向/置信度文案
+// 输出：更新事件页所有模块（价格、信号、策略、结论）
 function renderEventPage(data) {
+  // 事件页渲染总入口：把 analysis 缓存数据转成“CALL/PUT 决策面板”。
   if (!data) return;
   const { indicators, closes, price, fib, vegas, elliott, ticker, fgVal, frValue, lsRatio, symbol } = data;
   const coin = (symbol || 'BTCUSDT').replace('USDT','');
@@ -1005,6 +1132,7 @@ function renderEventPage(data) {
     if (ef) ef.setAttribute('points', fillPts);
   }
 
+  // 六维评分模型：趋势/动量/量能/结构/情绪/波浪。
   const dims = buildEventDimensions(indicators, fib, vegas, elliott, fgVal, frValue, lsRatio, price, closes);
   const totalBull = dims.reduce((s,d) => s + (d.score > 0 ? d.score : 0), 0);
   const totalBear = dims.reduce((s,d) => s + (d.score < 0 ? Math.abs(d.score) : 0), 0);
@@ -1039,6 +1167,7 @@ function renderEventPage(data) {
   badge.textContent = `CALL ${bullCount} / PUT ${bearCount} / 中性 ${neutralCount}`;
   badge.className = `panel-badge ${netScore > 0.15 ? 'badge-green' : netScore < -0.15 ? 'badge-red' : 'badge-amber'}`;
 
+  // netScore 决定方向，confidence 决定置信强度展示。
   let callPut = '观望', dirColor = 'var(--amber)', dirIcon = '⊡', confText = '';
   if (netScore > 0.25)       { callPut = 'CALL ▲ 看涨'; dirColor = 'var(--green)'; dirIcon = '▲'; confText = `多维度共振看多，强烈建议买入 CALL 合约。置信度 ${pct}%`; }
   else if (netScore > 0.10)  { callPut = 'CALL ↑ 偏多'; dirColor = 'var(--green)'; dirIcon = '↑'; confText = `多头信号偏强，可考虑 CALL 方向，置信度 ${pct}%，建议轻仓`; }
@@ -1063,7 +1192,13 @@ function renderEventPage(data) {
   verdictBadge.textContent = netScore > 0.1 ? '买入 CALL' : netScore < -0.1 ? '买入 PUT' : '建议观望';
   verdictBadge.className = `panel-badge ${netScore > 0.1 ? 'badge-green' : netScore < -0.1 ? 'badge-red' : 'badge-amber'}`;
 
-  const atrPct = price > 0 ? (closes ? Math.abs(closes[closes.length-1]-closes[closes.length-2])/price*100 : 1.5) : 1.5;
+  // closes 至少要有 2 根才能计算“相邻收盘波动率”，否则使用默认值防止 NaN 传播。
+  const hasEnoughCloses = Array.isArray(closes) && closes.length >= 2;
+  const lastClose = hasEnoughCloses ? parseFloat(closes[closes.length - 1]) : NaN;
+  const prevClose = hasEnoughCloses ? parseFloat(closes[closes.length - 2]) : NaN;
+  const atrPct = (price > 0 && Number.isFinite(lastClose) && Number.isFinite(prevClose))
+    ? (Math.abs(lastClose - prevClose) / price * 100)
+    : 1.5;
   const baseRatio = Math.max(1.3, Math.min(2.8, 2.5 - atrPct * 0.2));
   const payoutWin = (100 * baseRatio).toFixed(0);
   document.getElementById('evPayoutWin').textContent = `+${payoutWin} USDT`;
@@ -1112,7 +1247,7 @@ function renderEventPage(data) {
     `<strong style="color:var(--amber);">⚠ 事件合约风险提示</strong><br>
     不能提前平仓，需持有至到期。最大亏损 = 保费本金（每日上限10,000 USDT）。
     ${confidence < 25 ? '<br><strong style="color:var(--red)">当前置信度低，建议观望不入场。</strong>' : ''}
-    ${Math.abs(parseFloat(frValue||0)*100) > 0.15 ? `<br>资金费率偏高(${(parseFloat(frValue||0)*100).toFixed(3)}%)，多头持仓成本增加，做多需谨慎。` : ''}`;
+    ${Math.abs(parseFloat(frValue||0)) > 0.15 ? `<br>资金费率偏高(${parseFloat(frValue||0).toFixed(3)}%)，多头持仓成本增加，做多需谨慎。` : ''}`;
 
   document.getElementById('eventReasoning').innerHTML = buildEventReasoning(dims, indicators, coin, callPut, pct, netScore, fgVal, frValue, baseRatio);
 
@@ -1120,6 +1255,7 @@ function renderEventPage(data) {
 }
 
 function buildEventDimensions(indicators, fib, vegas, elliott, fgVal, frValue, lsRatio, price, closes) {
+  // 返回统一结构：[{name, score, weight, label}]，供上层做总分加权。
   const dims = [];
   if (!indicators) return dims;
 
@@ -1160,7 +1296,7 @@ function buildEventDimensions(indicators, fib, vegas, elliott, fgVal, frValue, l
   let sentScore = 0;
   if (fgVal !== null) { const fv = parseInt(fgVal); if (fv < 30) sentScore += 1; else if (fv > 70) sentScore -= 1; }
   if (lsRatio !== null) { if (lsRatio > 1.3) sentScore += 0.5; else if (lsRatio < 0.77) sentScore -= 0.5; }
-  if (frValue !== null) { const fr = parseFloat(frValue)*100; if (fr < -0.05) sentScore += 0.8; else if (fr > 0.1) sentScore -= 0.5; }
+  if (frValue !== null) { const fr = parseFloat(frValue); if (fr < -0.05) sentScore += 0.8; else if (fr > 0.1) sentScore -= 0.5; }
   dims.push({ name:'市场情绪', score: sentScore, weight: 2.3, label: sentScore > 0.5 ? '偏恐惧(利多)' : sentScore < -0.5 ? '贪婪(利空)' : '中性' });
 
   let waveScore = 0;
@@ -1178,6 +1314,7 @@ function buildEventDimensions(indicators, fib, vegas, elliott, fgVal, frValue, l
 }
 
 function buildKeySigs(indicators, fgVal, frValue, netScore) {
+  // 关键证据列表：提取“最能解释方向”的少量高权重信号。
   const sigs = [];
   if (!indicators) return sigs;
 
@@ -1201,7 +1338,7 @@ function buildKeySigs(indicators, fgVal, frValue, netScore) {
   }
 
   if (frValue !== null) {
-    const fr = parseFloat(frValue)*100;
+    const fr = parseFloat(frValue);
     if (fr < -0.05) sigs.push({ type:'bull', icon:'◈', text:`资金费率为负(${fr.toFixed(3)}%)，空头付费，轧空行情概率增加`, weight:2 });
     else if (fr > 0.15) sigs.push({ type:'bear', icon:'◈', text:`资金费率过高(${fr.toFixed(3)}%)，多头过度拥挤，注意回调清仓`, weight:2 });
   }
@@ -1214,9 +1351,11 @@ function buildKeySigs(indicators, fgVal, frValue, netScore) {
 }
 
 function buildEventReasoning(dims, indicators, coin, callPut, pct, netScore, fgVal, frValue, baseRatio) {
+  // 生成“自然语言推理说明”，用于事件页解释区块。
   const rsiV = indicators?.rsi ? parseFloat(indicators.rsi.value) : 50;
   const isUP = netScore > 0;
-  const frNum = parseFloat(frValue||0)*100;
+  const frNum = parseFloat(frValue||0);
+  const dir = callPut || (isUP ? 'CALL ▲ 看涨' : netScore < 0 ? 'PUT ▼ 看跌' : 'WAIT 观望');
 
   let html = `<div style="margin-bottom:12px;">
     <strong style="color:${isUP?'var(--green)':netScore<0?'var(--red)':'var(--amber)'};font-family:var(--mono);">
@@ -1241,7 +1380,7 @@ function buildEventReasoning(dims, indicators, coin, callPut, pct, netScore, fgV
 
   html += `<div style="margin-bottom:10px;padding-left:12px;border-left:2px solid var(--border);">
     <strong style="color:var(--text-dim);font-size:12px;">四、情绪与合约数据</strong><br>
-    <span style="font-size:12px;">${fgVal?`恐惧贪婪指数${fgVal}，${parseInt(fgVal)<30?'市场极度恐惧，历史上往往是中线买入时机':parseInt(fgVal)>70?'市场极度贪婪，注意风险':' 情绪中性'}。`:''}${frValue?`资金费率${(parseFloat(frValue)*100).toFixed(4)}%，${parseFloat(frValue)*100>0.1?'多头拥挤，警惕轧多':parseFloat(frValue)*100<-0.05?'空头付费，轧空行情概率增加':'属于正常范围'}。`:''}</span>
+    <span style="font-size:12px;">${fgVal?`恐惧贪婪指数${fgVal}，${parseInt(fgVal)<30?'市场极度恐惧，历史上往往是中线买入时机':parseInt(fgVal)>70?'市场极度贪婪，注意风险':' 情绪中性'}。`:''}${frValue?`资金费率${parseFloat(frValue).toFixed(4)}%，${parseFloat(frValue)>0.1?'多头拥挤，警惕轧多':parseFloat(frValue)<-0.05?'空头付费，轧空行情概率增加':'属于正常范围'}。`:''}</span>
   </div>`;
 
   html = html.replace('一、趋势分析</strong><br>', `一、趋势分析（支撑 ${isUP?'CALL':'PUT'} 方向）</strong><br>`);
@@ -1261,7 +1400,8 @@ function buildEventReasoning(dims, indicators, coin, callPut, pct, netScore, fgV
 }
 
 function renderEventStrategy(indicators, netScore, price, coin, baseRatio, expirySugg) {
-  const fr = parseFloat(window._lastFrValue||0)*100;
+  // 策略参考卡：把方向、RSI、Fib、资金费率、到期时间做模板化展示。
+  const fr = parseFloat(window._lastFrValue||0);
   const fibPct = window._lastFibPct||50;
   const rsiV   = indicators?.rsi ? parseFloat(indicators.rsi.value) : 50;
 
@@ -1324,6 +1464,7 @@ function renderEventStrategy(indicators, netScore, price, coin, baseRatio, expir
 }
 
 function monitorItem(level, icon, title, detail, badge, badgeCls) {
+  // 监控卡片通用模板：减少各监控模块重复拼接 HTML。
   return `<div class="monitor-item">
     <div class="monitor-dot ${level}"></div>
     <div class="monitor-content">
@@ -1336,6 +1477,7 @@ function monitorItem(level, icon, title, detail, badge, badgeCls) {
 }
 
 function renderWhaleMonitor(coin, klines, ticker, cgInfo, onchain) {
+  // 鲸鱼监控：基于成交量、价格、链上大额交易做“疑似大资金行为”提示。
   const price  = ticker ? parseFloat(ticker.lastPrice) : 0;
   const vol24h = ticker ? parseFloat(ticker.quoteVolume) : 0;
   const change = ticker ? parseFloat(ticker.priceChangePercent) : 0;
@@ -1346,6 +1488,7 @@ function renderWhaleMonitor(coin, klines, ticker, cgInfo, onchain) {
   const volRatio = lastVol / (avgVol || 1);
 
   let html = '';
+  // 阈值规则属于经验值，不同币种可后续改为动态阈值。
   if (vol24h > 5e9) {
     html += monitorItem('high','🐳', `${coin}检测到超大额成交量`, `24小时成交量 $${fmt(vol24h)}，是正常水平的${(vol24h/2e9).toFixed(1)}倍，疑似机构建仓行为。价格变动方向：${change>0?'上行':'下行'} ${Math.abs(change).toFixed(2)}%`, '超大额', 'badge-red');
   }
@@ -1363,6 +1506,7 @@ function renderWhaleMonitor(coin, klines, ticker, cgInfo, onchain) {
     html += monitorItem('info','👥', `${coin}社区活跃度`, `Twitter关注 ${fmt(twFollowers)}，Reddit订阅 ${fmt(redditSubs)}。社区热度${twFollowers>1e6?'极高，市场关注度强':'中等'}。CoinGecko ${cgInfo.market_data?.market_cap_rank?`市值排名 #${cgInfo.market_data.market_cap_rank}`:'--'}。`, '实时数据', 'badge-blue');
   }
 
+  // 如果拿到链上数据，则优先展示链上证据（可信度更高）。
   if (onchain?.data?.length > 0) {
     const trades = onchain.data.slice(0,3);
     const buyCount  = trades.filter(t => t.attributes?.kind === 'buy').length;
@@ -1385,6 +1529,7 @@ function renderWhaleMonitor(coin, klines, ticker, cgInfo, onchain) {
 }
 
 function renderSmartMoney(coin, klines, ticker, cgInfo) {
+  // 聪明钱模块：核心看 OBV 与价格是否背离 + 关键 K 线形态。
   const closes = klines.map(k => parseFloat(k[4]));
   const opens  = klines.map(k => parseFloat(k[1]));
   const vols   = klines.map(k => parseFloat(k[5]));
@@ -1400,6 +1545,7 @@ function renderSmartMoney(coin, klines, ticker, cgInfo) {
   }
   const obvSlope = obvArr[last] - obvArr[Math.max(0,last-12)];
   const priceSlope = closes[last] - closes[Math.max(0,last-12)];
+  // 背离定义：价格方向与 OBV 方向相反。
   const isDivergence = (obvSlope > 0 && priceSlope < 0) || (obvSlope < 0 && priceSlope > 0);
 
   let html = '';
@@ -1452,6 +1598,7 @@ function renderSmartMoney(coin, klines, ticker, cgInfo) {
 }
 
 function renderOnChainAnomalies(coin, klines, ticker, onchain, trending, globalInfo) {
+  // 异常模块：优先捕捉“统计异常”（Z 分数）与“大波动”。
   const price  = ticker ? parseFloat(ticker.lastPrice) : 0;
   const change = ticker ? parseFloat(ticker.priceChangePercent) : 0;
   const vol    = ticker ? parseFloat(ticker.quoteVolume) : 0;
@@ -1461,6 +1608,7 @@ function renderOnChainAnomalies(coin, klines, ticker, onchain, trending, globalI
   const avgVol = vols.reduce((a,b)=>a+b,0)/vols.length;
   const stdVol = Math.sqrt(vols.reduce((s,v)=>(s+(v-avgVol)**2),0)/vols.length);
   const lastVol = vols[vols.length-1] || 0;
+  // Z-Score > 2 视为异常放量（经验阈值）。
   const zScore  = (lastVol - avgVol) / (stdVol || 1);
 
   if (Math.abs(zScore) > 2) {
@@ -1523,6 +1671,7 @@ function renderOnChainAnomalies(coin, klines, ticker, onchain, trending, globalI
 }
 
 function renderExchangeFlow(coin, klines, ticker, cgInfo) {
+  // 交易所流向模块：当前是估算模型（基于涨跌与成交量推算净流入/流出）。
   const change = ticker ? parseFloat(ticker.priceChangePercent) : 0;
   const vol    = ticker ? parseFloat(ticker.quoteVolume) : 0;
   const price  = ticker ? parseFloat(ticker.lastPrice) : 0;
@@ -1565,6 +1714,7 @@ function renderExchangeFlow(coin, klines, ticker, cgInfo) {
 }
 
 function renderFundingHistory(frData, symbol) {
+  // 资金费率历史：展示最近样本趋势和均值，判断拥挤度是否持续。
   const container = document.getElementById('frHistBody');
   if (!frData || !frData.length) {
     container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:16px;">现货交易对无资金费率数据</div>';
@@ -1572,24 +1722,33 @@ function renderFundingHistory(frData, symbol) {
     return;
   }
 
+  // 资金费率统一归一化为“百分比数值”：
+  // - 原始交易所常见格式：0.0001（小数） -> 0.01（百分比）
+  // - 若上游已给百分比（例如 0.01 表示 0.01%），避免再次 *100 放大。
+  const toFundingPct = (v) => {
+    const n = parseFloat(v);
+    if (!Number.isFinite(n)) return 0;
+    return Math.abs(n) <= 0.005 ? n * 100 : n;
+  };
+
   const recent = frData.slice(-12);
-  const maxFr  = Math.max(...recent.map(r => Math.abs(parseFloat(r.fundingRate)*100)));
-  const avgFr  = recent.reduce((s,r) => s + parseFloat(r.fundingRate)*100, 0) / recent.length;
+  const maxFr  = Math.max(...recent.map(r => Math.abs(toFundingPct(r.fundingRate))));
+  const avgFr  = recent.reduce((s, r) => s + toFundingPct(r.fundingRate), 0) / recent.length;
 
   let html = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;font-family:var(--mono);">近${recent.length}期资金费率趋势（均值 ${avgFr.toFixed(4)}%）</div>`;
   html += recent.map(r => {
-    const fr = parseFloat(r.fundingRate)*100;
-    const barW = maxFr > 0 ? Math.abs(fr)/maxFr*80 : 0;
+    const frPct = toFundingPct(r.fundingRate);
+    const barW = maxFr > 0 ? Math.abs(frPct) / maxFr * 80 : 0;
     const time = new Date(r.fundingTime).toLocaleTimeString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-    const col  = fr > 0 ? 'var(--red)' : 'var(--green)';
+    const col  = frPct > 0 ? 'var(--red)' : 'var(--green)';
     return `<div class="fr-bar-row">
       <div class="fr-label">${time}</div>
       <div class="fr-track">
-        ${fr >= 0
+        ${frPct >= 0
           ? `<div class="fr-bar-pos" style="width:${barW}%;background:rgba(240,56,74,0.5)"></div>`
           : `<div class="fr-bar-neg" style="width:${barW}%;background:rgba(0,217,126,0.5)"></div>`}
       </div>
-      <div class="fr-val" style="color:${col}">${fr>0?'+':''}${fr.toFixed(4)}%</div>
+      <div class="fr-val" style="color:${col}">${frPct > 0 ? '+' : ''}${frPct.toFixed(4)}%</div>
     </div>`;
   }).join('');
 
@@ -1600,6 +1759,7 @@ function renderFundingHistory(frData, symbol) {
 }
 
 function renderOIHistory(oiData, coin) {
+  // OI 历史：重点看“总持仓变化方向 + 变化幅度”，辅助判断新资金进出。
   const container = document.getElementById('oiHistBody');
   if (!oiData || !oiData.length) {
     container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:16px;">现货交易对无持仓量数据</div>';
@@ -1636,15 +1796,23 @@ function renderOIHistory(oiData, coin) {
 }
 
 function renderRiskAlerts(coin, klines, ticker, frData) {
+  // 风险预警是“规则引擎”：按阈值组合输出高/中/低风险项。
   const change  = ticker ? parseFloat(ticker.priceChangePercent) : 0;
   const vol24h  = ticker ? parseFloat(ticker.quoteVolume) : 0;
   const price   = ticker ? parseFloat(ticker.lastPrice) : 0;
-  const frLast  = frData?.length ? parseFloat(frData[frData.length-1]?.fundingRate||0)*100 : 0;
+  // 统一容错：兼容“原始小数”和“已是百分比”的两种上游口径。
+  const toFundingPct = (v) => {
+    const n = parseFloat(v);
+    if (!Number.isFinite(n)) return 0;
+    return Math.abs(n) <= 0.005 ? n * 100 : n;
+  };
+  const frPctLast  = frData?.length ? toFundingPct(frData[frData.length-1]?.fundingRate) : 0;
 
+  // alerts 每项包含：级别、名称、解释、条形强度、方向色。
   const alerts = [];
   if (Math.abs(change) > 5)  alerts.push({ level:'high',   name:'大幅价格异动',   desc:`24H涨跌 ${change.toFixed(2)}%，超过5%预警线，市场波动剧烈，建议降低仓位。`, bar:Math.min(100,Math.abs(change)*10), type:'bear' });
-  if (frLast > 0.15)         alerts.push({ level:'high',   name:'资金费率过高',   desc:`资金费率${frLast.toFixed(4)}%，多头拥挤，极端情况下可能引发多杀多踩踏行情。`, bar:Math.min(100,frLast*500), type:'bear' });
-  if (frLast < -0.1)         alerts.push({ level:'medium', name:'资金费率极负',   desc:`资金费率${frLast.toFixed(4)}%，空头极度拥挤，小幅上涨可能触发连环轧空。`, bar:70, type:'bull' });
+  if (frPctLast > 0.15)      alerts.push({ level:'high',   name:'资金费率过高',   desc:`资金费率${frPctLast.toFixed(4)}%，多头拥挤，极端情况下可能引发多杀多踩踏行情。`, bar:Math.min(100, frPctLast * 500), type:'bear' });
+  if (frPctLast < -0.1)      alerts.push({ level:'medium', name:'资金费率极负',   desc:`资金费率${frPctLast.toFixed(4)}%，空头极度拥挤，小幅上涨可能触发连环轧空。`, bar:70, type:'bull' });
   if (vol24h > 5e9)          alerts.push({ level:'medium', name:'超高成交量',     desc:`24H成交量 $${fmt(vol24h)}，远超正常水平，大资金活跃，方向可信度高。`, bar:60, type:'neutral' });
   if (Math.abs(change) < 0.5 && vol24h < 1e8) alerts.push({ level:'low', name:'流动性不足', desc:'成交量极低，市场流动性差，大额订单可能造成较大滑点，不建议大仓位操作。', bar:40, type:'bear' });
 
@@ -1681,12 +1849,14 @@ function renderRiskAlerts(coin, klines, ticker, frData) {
 }
 
 function renderLivePage() {
+  // 直播页渲染：先过滤、排序，再渲染统计与卡片。
   let data = [..._liveStreamers];
 
   if (_liveFilter !== 'all') {
     data = data.filter(s => s.coins.includes(_liveFilter));
   }
 
+  // 支持按热度/在线/观看/弹幕多维排序。
   const sortFn = {
     score:   (a,b) => b.score - a.score,
     viewers: (a,b) => b.viewers - a.viewers,
@@ -1836,6 +2006,7 @@ function renderLivePage() {
 }
 
 function renderLiveSentiment(data) {
+  // 统计“看多/看空/中性”主播与观众占比，输出简报。
   const body = document.getElementById('liveSentBody');
   if (!body) return;
 
@@ -1877,6 +2048,7 @@ function renderLiveSentiment(data) {
 }
 
 function renderLiveTagCloud(data) {
+  // 话题云按“观看人数”加权，字体越大表示话题越热。
   const tagCloud = document.getElementById('liveTagCloud');
   const liveInsight = document.getElementById('liveInsight');
   if (!tagCloud) return;
@@ -1921,16 +2093,19 @@ function renderLiveTagCloud(data) {
 }
 
 function openBrief() {
+  // 打开简报弹窗并锁定页面滚动，避免背景误滚。
   document.getElementById('briefModal').style.display = 'block';
   document.body.style.overflow = 'hidden';
 }
 
 function closeBrief() {
+  // 关闭弹窗后恢复页面滚动。
   document.getElementById('briefModal').style.display = 'none';
   document.body.style.overflow = '';
 }
 
 function copyBrief() {
+  // 复制的是纯文本版本，便于发到聊天工具或笔记系统。
   const content = document.getElementById('briefContent');
   const plainText = getBriefPlainText(_lastAnalysisData);
   navigator.clipboard.writeText(plainText).then(() => {
@@ -1942,6 +2117,7 @@ function copyBrief() {
 }
 
 function getBriefPlainText(data) {
+  // 纯文本简报：强调“可读 + 可粘贴 + 结构固定”。
   const { indicators, price, symbol, fgVal, frValue, lsRatio, closes } = data;
   const coin   = (symbol||'BTCUSDT').replace('USDT','');
   const allInd = Object.values(indicators||{});
@@ -1971,7 +2147,7 @@ function getBriefPlainText(data) {
 - 量价：${indicators?.volume?.type==='bull'?'放量上涨':'放量下跌'}
 
 【合约市场】
-- 资金费率：${frValue?((parseFloat(frValue)*100).toFixed(4)+'%'):'N/A'}
+- 资金费率：${frValue?(parseFloat(frValue).toFixed(4)+'%'):'N/A'}
 - 多空比：${lsRatio?lsRatio.toFixed(2):'N/A'}
 - 恐惧贪婪：${fgVal||'--'}
 
@@ -1985,6 +2161,7 @@ ${bulls > bears*1.3 ? '多头信号占优，市场动能偏强，可考虑做多
 }
 
 function generateBrief(data) {
+  // 生成可复制的图文简报（用于快速分享当前市场结论）。
   const { indicators, price, symbol, fgVal, frValue, lsRatio, closes } = data;
   const coin     = (symbol||'BTCUSDT').replace('USDT','');
   const allInd   = Object.values(indicators||{});
@@ -1997,9 +2174,10 @@ function generateBrief(data) {
   const now      = new Date();
   const tf       = window._lastInterval || '1h';
   const tfText   = { '15m':'15分钟', '1h':'1小时', '4h':'4小时', '1d':'日线' }[tf] || '1小时';
-  const frNum    = frValue ? parseFloat(frValue)*100 : 0;
+  const frNum    = frValue ? parseFloat(frValue) : 0;
   const fibPct   = window._lastFibPct || 50;
 
+  // longScore 是“技术面偏向分”，用于映射 LONG/SHORT/WAIT 文案。
   const longScore = bulls / (bulls + bears || 1) * 100;
   let verdict = '', verdictColor = 'var(--amber)', verdictBg = 'rgba(245,166,35,0.08)';
   if (longScore >= 65)      { verdict = '强烈做多 LONG'; verdictColor = 'var(--green)';  verdictBg = 'rgba(0,217,126,0.08)'; }
@@ -2011,6 +2189,7 @@ function generateBrief(data) {
   const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   document.getElementById('briefTimestamp').textContent = ts;
 
+  // sections 分块拼装，最后统一写入 briefContent。
   const sections = [];
 
   sections.push(`
@@ -2030,6 +2209,7 @@ function generateBrief(data) {
       </div>
     </div>`);
 
+  // 关键指标清单：只挑“读者最关心”的代表项进入简报。
   const indRows = [
     ['MACD',      indicators?.macd,    'MACD金叉',    'MACD死叉'],
     ['EMA均线',   indicators?.ema,     '多头排列',    '空头排列'],
@@ -2088,6 +2268,7 @@ function generateBrief(data) {
       </div>
     </div>`);
 
+  // 结论段采用模板化规则，保证风格稳定、可快速对比。
   let conclusion = '';
   if (longScore >= 65) {
     conclusion = `多维度技术指标共振看多（${bulls}项利多 vs ${bears}项利空）。${indicators?.ema200?.type==='bull'?'EMA200长期支撑有效，':''}${rsiV<50?`RSI(${rsiV.toFixed(0)})未超买，上行空间充足，`:''}${indicators?.macd?.type==='bull'?'MACD金叉确认，':''}建议顺势轻仓做多，在关键支撑位设置止损。`;
@@ -2112,6 +2293,7 @@ function generateBrief(data) {
 
 
 function renderNewsSentiment(news, coin) {
+  // 新闻情绪：关键词 + 投票混合判定，输出利多/利空占比与结论。
   if (!news || news.length === 0) {
     document.getElementById('newsListContainer').innerHTML =
       '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">暂无消息数据</div>';
@@ -2120,15 +2302,18 @@ function renderNewsSentiment(news, coin) {
     return;
   }
 
+  // 关键词表是启发式词典，可按项目需要逐步扩充。
   const bullKw = ['surge','rally','bull','breakout','soar','gain','high','up','rise','positive','adopt','approve','launch','partnership','buy','long','green','support','growth','record'];
   const bearKw = ['crash','dump','bear','drop','fall','low','down','decline','negative','ban','hack','scam','sell','short','red','risk','fear','loss','liquidat','warning'];
 
   let bulls = 0, bears = 0, neutrals = 0;
+  // 只分析前 15 条，兼顾实时性与性能。
   const analyzed = news.slice(0, 15).map(item => {
     const title = (item.title || '').toLowerCase();
     const pos = item.votes?.positive || 0;
     const neg = item.votes?.negative || 0;
     let sent = 'neutral';
+    // 判定优先级：外部已给情绪 > 投票差 > 关键词匹配。
     if (item._sentiment) {
       sent = item._sentiment;
     } else if (pos > neg + 2) {
@@ -2151,6 +2336,7 @@ function renderNewsSentiment(news, coin) {
   const bullPct = Math.round(bulls / total * 100);
   const bearPct = Math.round(bears / total * 100);
   const neutPct = 100 - bullPct - bearPct;
+  // score>0 偏多，<0 偏空，用于生成总标签。
   const score = bullPct - bearPct;
 
   let sentColor = 'var(--gold)';

@@ -1,3 +1,4 @@
+// calc.js：合约风险计算器（爆仓价、仓位风险、止盈止损、建议）。
 let _calcCoin     = 'BTC';
 let _calcDir      = 'long';
 let _calcMode     = 'cross';
@@ -12,6 +13,7 @@ let _calcCloses   = [];
 let _calcVolumes  = [];
 
 async function loadCalcPage() {
+  // 计算器页初始化：展示主面板、拉数据、刷新一次结果、启动价格轮询。
   const tipEl  = document.getElementById('calcNoDataTip');
   const mainEl = document.getElementById('calcMain');
   if (tipEl)  tipEl.style.display = 'none';
@@ -25,6 +27,7 @@ async function loadCalcPage() {
   calcUpdate();
 
   if (_calcTimer) clearInterval(_calcTimer);
+  // 每 5 秒刷新当前价，保证风险指标跟随行情变化。
   _calcTimer = setInterval(async () => {
     try {
       const t = await getTicker(_calcCoin + 'USDT');
@@ -39,6 +42,8 @@ async function loadCalcPage() {
 }
 
 async function calcLoadAllData() {
+  // 初次进入计算器时，同时拉 ticker + K 线。
+  // ticker 用于当前价显示；K 线用于 ATR 和关键位。
   const symbol   = _calcCoin + 'USDT';
   const interval = '1h';
   try {
@@ -60,8 +65,9 @@ async function calcLoadAllData() {
       _calcCloses  = klines.map(k => parseFloat(k[4]));
       _calcVolumes = klines.map(k => parseFloat(k[5]));
 
-      const atrArr = calcATR(_calcHighs, _calcLows, _calcCloses, 14);
-      const lastATR = atrArr[atrArr.length - 1];
+      // 注意：calcATR 返回 { atr, atrArr } 对象，不是纯数组。
+      const atrObj = calcATR(_calcHighs, _calcLows, _calcCloses, 14);
+      const lastATR = atrObj?.atr;
       if (lastATR && !isNaN(lastATR)) _calcATR = lastATR;
 
       const entryEl = document.getElementById('calcEntryPrice');
@@ -75,6 +81,7 @@ async function calcLoadAllData() {
 }
 
 async function calcFetchPrice() {
+  // custom 模式允许用户输入非预设币种（默认拼接 USDT）。
   try {
     const sym = _calcCoin === 'custom'
       ? (document.getElementById('calcCustomSymbol')?.value?.toUpperCase() || 'BTC') + 'USDT'
@@ -88,6 +95,10 @@ async function calcFetchPrice() {
   } catch(e) {}
 }
 
+// 计算器核心函数（输入 -> 处理 -> 输出）：
+// 输入：保证金、杠杆、方向、模式、入场价、账户余额
+// 处理：计算仓位价值、爆仓价、风险等级、SL/TP 与建议
+// 输出：刷新页面上所有风险指标与提示
 function calcUpdate() {
   const margin    = parseFloat(document.getElementById('calcMargin')?.value || 0);
   const lev       = parseInt(document.getElementById('calcLevSlider')?.value || 10);
@@ -95,14 +106,19 @@ function calcUpdate() {
   const balance   = parseFloat(document.getElementById('calcBalance')?.value || 0);
   const entry     = entryRaw > 0 ? entryRaw : _calcPrice;
 
+  // 任何核心输入缺失都不计算，避免 NaN 污染整页。
   if (!margin || !lev || !entry) return;
 
+  // 名义仓位价值 = 保证金 * 杠杆。
   const posValue  = margin * lev; 
+  // 持仓数量 = 名义仓位 / 入场价。
   const posCoins  = posValue / entry;
   const isCross   = _calcMode === 'cross';
   const isLong    = _calcDir === 'long';
+  // mmr = 维持保证金率（这里是简化常量模型，不同交易所会不同）。
   const mmr = 0.005;
   let liqPrice;
+  // 爆仓公式分两套：全仓 / 逐仓（这里是简化模型）。
   if (isCross && balance > 0) {
     const totalMargin = balance;
     if (isLong) {
@@ -118,10 +134,12 @@ function calcUpdate() {
     }
   }
 
+  // 爆仓价不允许出现负值。
   liqPrice = Math.max(0, liqPrice);
 
   const liqDist    = Math.abs(entry - liqPrice);
   const liqDistPct = (liqDist / entry * 100).toFixed(2);
+  // 全仓模式下“真实杠杆”取决于仓位占余额比，而非滑块名义杠杆。
   const realLev    = isCross && balance > 0 ? (posValue / balance).toFixed(1) : lev.toFixed(1);
   const marginRatio = isCross && balance > 0 ? (margin / balance * 100).toFixed(1) : null;
   const maxLoss    = isCross ? balance : margin;
@@ -154,6 +172,7 @@ function calcUpdate() {
 }
 
 function calcRenderRisk(lev, liqDistPct, marginRatio, isCross, balance, margin, posValue) {
+  // 风险等级规则主要由“杠杆 + 爆仓距离”决定，属于经验阈值模型。
   const dist = parseFloat(liqDistPct);
   let level, color, text;
 
@@ -185,6 +204,7 @@ function calcRenderRisk(lev, liqDistPct, marginRatio, isCross, balance, margin, 
 }
 
 function calcRenderAutoSLTP(entry, posValue, isLong) {
+  // 自动止盈止损采用 ATR 倍数法：SL=1.5ATR，TP=3ATR（固定 RR=1:2）。
   const atr = _calcATR > 0 ? _calcATR : entry * 0.02;
   const slDist = atr * 1.5;
   const tpDist = atr * 3;
@@ -218,6 +238,7 @@ function calcRenderAutoSLTP(entry, posValue, isLong) {
 }
 
 function calcRenderManualSLTP(entry, posValue, isLong) {
+  // 手动模式下仅做“结果展示与 RR 计算”，不替用户改输入值。
   const slPrice = parseFloat(document.getElementById('calcManualSL')?.value || 0);
   const tpPrice = parseFloat(document.getElementById('calcManualTP')?.value || 0);
 
@@ -258,6 +279,10 @@ function calcRenderManualSLTP(entry, posValue, isLong) {
 }
 
 function calcRenderSR() {
+  // 支撑阻力来源混合：
+  // 1) Fib 关键位
+  // 2) 指标位（EMA200/VWAP/AVWAP）
+  // 3) 最近摆动高低点
   const listEl = document.getElementById('calcSRList');
   if (!listEl) return;
 
@@ -324,6 +349,7 @@ function calcRenderSR() {
   if (recentHigh > 0) rows.push({ label:'近期摆动高点', price:recentHigh, type:'resistance', dist:((Math.abs(price-recentHigh)/price)*100).toFixed(2) });
   if (recentLow < Infinity) rows.push({ label:'近期摆动低点', price:recentLow, type:'support', dist:((Math.abs(price-recentLow)/price)*100).toFixed(2) });
 
+  // 按距离当前价排序，让用户优先看到“最近的关键位”。
   rows.sort((a, b) => parseFloat(a.dist) - parseFloat(b.dist));
 
   if (rows.length === 0) {
@@ -348,6 +374,7 @@ function calcRenderSR() {
 }
 
 function calcRenderAdvice(lev, liqDistPct, entry, liqPrice, isLong, isCross, balance, margin, marginRatio) {
+  // 建议系统是规则拼接，不是机器学习模型，核心目标是风险提示。
   const listEl = document.getElementById('calcAdviceList');
   if (!listEl) return;
 

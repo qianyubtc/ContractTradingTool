@@ -1,3 +1,4 @@
+// event.js：事件合约模拟页（本地账户、下单、结算、建议信号）。
 let _evCoin = 'BTC';
 let _evDuration = 10; // 分钟
 let _evKlines = null;
@@ -5,6 +6,7 @@ let _evTicker = null;
 let _evSettleTimer = null;
 
 function evGetAccount() {
+  // 事件页账户是“本地模拟账户”，只存在浏览器 localStorage 中。
   try {
     const saved = localStorage.getItem('ev_account');
     if (saved) return JSON.parse(saved);
@@ -17,6 +19,7 @@ function evSaveAccount(acc) {
 }
 
 function evGetOrders() {
+  // 当前持仓订单（未结算）。
   try {
     return JSON.parse(localStorage.getItem('ev_orders') || '[]');
   } catch(e) { return []; }
@@ -27,6 +30,7 @@ function evSaveOrders(orders) {
 }
 
 function evGetHistory() {
+  // 历史订单（已结算）。
   try {
     return JSON.parse(localStorage.getItem('ev_history') || '[]');
   } catch(e) { return []; }
@@ -37,6 +41,7 @@ function evSaveHistory(hist) {
 }
 
 async function loadEventPage() {
+  // 进入事件页时先恢复“账户状态 + 持仓/历史”，再拉行情并启动结算循环。
   evUpdateBalance();
   evUpdateStats();
   evRenderActiveOrders();
@@ -45,9 +50,11 @@ async function loadEventPage() {
   evStartSettleLoop();
 }
 
+// 拉取事件页行情数据并可选重算建议方向。
 async function evLoadMarketData(recalc = true) {
   const symbol = _evCoin + 'USDT';
   try {
+    // 时长越短用越小级别 K 线，保证信号和下单周期匹配。
     const interval = _evDuration <= 10 ? '1m' : _evDuration <= 30 ? '5m' : _evDuration <= 60 ? '15m' : '1h';
     const [ticker, klines] = await Promise.all([
       getTicker(symbol),
@@ -61,6 +68,7 @@ async function evLoadMarketData(recalc = true) {
 }
 
 function evRenderPrice() {
+  // 只负责事件页头部行情显示，不做任何交易判断。
   if (!_evTicker) return;
   const t = _evTicker;
   const price = parseFloat(t.lastPrice);
@@ -90,6 +98,10 @@ function evRenderPrice() {
   }
 }
 
+// 事件建议打分（输入 -> 处理 -> 输出）：
+// 输入：analyzeAll 产出的 indicators + 当前时长（短线/中线）
+// 处理：不同指标按场景加权累计 score
+// 输出：方向（看涨/看跌/观望）+ 置信度 + 理由
 function evCalcSuggestion() {
   const dirEl    = document.getElementById('evDirection');
   const confEl   = document.getElementById('evConfidence');
@@ -113,6 +125,9 @@ function evCalcSuggestion() {
   const bullReasons = [];
   const bearReasons = [];
 
+  // 权重分层：
+  // - isShort: 超短线更看动量
+  // - isMid: 中线开始引入更多结构类指标
   const isShort  = _evDuration <= 10;
   const isMid    = _evDuration <= 60;
 
@@ -211,6 +226,7 @@ function evCalcSuggestion() {
   else if (score <= -1) { direction = '▼ 看跌'; dirColor = '#ff9800';     confidence = '偏弱'; confColor = 'var(--gold)'; }
   else                  { direction = '→ 观望'; dirColor = 'var(--gold)'; confidence = '信号不明'; confColor = 'var(--gold)'; }
 
+  // 展示逻辑：主方向给 3 条理由，反向给 1 条作为风险提示。
   const reasons = score >= 0
     ? [...bullReasons.slice(0, 3), ...bearReasons.slice(0, 1)]
     : [...bearReasons.slice(0, 3), ...bullReasons.slice(0, 1)];
@@ -232,6 +248,7 @@ function evSetAmount(val) {
 }
 
 function evUpdateAmountDisplay() {
+  // 当前规则：猜对收益 = 本金 * 1.8（含返还本金的展示逻辑由文案定义）。
   const amt = parseFloat(document.getElementById('evAmount')?.value || 10);
   const win = (amt * 1.8).toFixed(2);
   const amtEl = document.getElementById('evAmountShow');
@@ -241,6 +258,11 @@ function evUpdateAmountDisplay() {
 }
 
 function evPlaceOrder(direction) {
+  // 下单流程：
+  // 1) 校验行情与金额
+  // 2) 扣减余额
+  // 3) 生成订单并写入本地存储
+  // 4) 刷新 UI
   if (!_evTicker) { alert('行情数据未加载，请稍后'); return; }
 
   const amtInput = document.getElementById('evAmount');
@@ -273,6 +295,7 @@ function evPlaceOrder(direction) {
   const suggestion = window._evSuggestion;
   const followSug  = suggestion && suggestion.direction === direction;
 
+  // 订单对象仅用于本地模拟，不会发给后端。
   const order = {
     id: Date.now(),
     coin: _evCoin,
@@ -299,6 +322,7 @@ function evPlaceOrder(direction) {
 }
 
 function evStartSettleLoop() {
+  // 1 秒更新倒计时与到期结算；30 秒刷新一次最新价。
   if (_evSettleTimer) clearInterval(_evSettleTimer);
   _evSettleTimer = setInterval(() => {
     evCheckSettle();
@@ -314,6 +338,10 @@ function evStartSettleLoop() {
 }
 
 async function evCheckSettle() {
+  // 结算流程：
+  // - 扫描已到期订单
+  // - 用到期时附近价格判断输赢
+  // - 回写余额/胜率/历史
   const orders = evGetOrders();
   if (orders.length === 0) return;
 
@@ -343,8 +371,11 @@ async function evCheckSettle() {
       } catch(e) { remaining.push(order); continue; }
     }
 
+    // 判定规则：涨单看 exit>entry，跌单看 exit<=entry。
     const priceUp = exitPrice > order.entryPrice;
+    // 买涨：到期价 > 入场价算赢；买跌：到期价 <= 入场价算赢。
     const won = (order.direction === 'up' && priceUp) || (order.direction === 'down' && !priceUp);
+    // 赔率模型：赢 +0.8x，输 -1x（本金在结算时一起回补）。
     const pnl = won ? parseFloat((order.amount * 0.8).toFixed(2)) : -order.amount;
 
     acc.balance = parseFloat((acc.balance + (won ? order.amount + pnl : 0)).toFixed(2));

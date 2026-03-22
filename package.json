@@ -1,0 +1,31 @@
+{
+  "name": "contract-trading-tool",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static frontend + Node/Express API proxy for contract market dashboard",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20 <23"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "serve": "http-server . -p 5173",
+    "dev": "nodemon server.js",
+    "test": "node --test",
+    "test:cov": "c8 -r text -r lcov npm test",
+    "lint": "echo \"Lint not configured yet\""
+  },
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "c8": "^10.1.3",
+    "http-server": "^14.1.1",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4"
+  }
+}
